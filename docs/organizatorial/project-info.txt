@@ -19,7 +19,7 @@ References:
     - https://www.kaggle.com/datasets/niyarrbarman/symptom2disease
 
 Members & Contact:
-    - Alexandru Picioroagă MSAI1 picalexs@gmail.com
-    - Carla Cotea MSAI1
-    - Daria Crăciun MISS1
-    - Alexandru Răduncanu MSAI1
+    - Alexandru Picioroagă MSAI1 picalexs@gmail.com discord:picalexs
+    - Carla Cotea MSAI1 coteacarla@gmail.com discord:carlut
+    - Daria Crăciun MISS1 discord:daria9135
+    - Alexandru Răduncanu MSAI1 discord:araducanu
