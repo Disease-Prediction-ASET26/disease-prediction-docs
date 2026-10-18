@@ -76,3 +76,11 @@ To ensure a successful and deliverable project by the end of the current semeste
     *   A Patient Portal for running assessments and receiving specialist recommendations.
     *   A Doctor Portal rendering a read-only view of the submitted reports.
 *   **Basic GDPR Framework:** Implementation of user consent banners upon registration and a functional "Delete Account" button that removes user data from the database.
+
+## 7. Use of AI in Requirements Engineering
+Google Gemini 3.1 Pro was utilized as an architectural co-pilot to refine the initial project rubric into a production-ready specification, specifically addressing clinical safety and EU regulatory compliance. 
+
+*   **Prompt 1 (Clinical Safety):** *"Please update the requirements document to implement an algorithmic triage and direct-to-specialist routing workflow... additionally, please assess and include any necessary clinical safety guardrails or emergency intercept protocols required when bypassing human primary care."*
+    *   **Architectural Result:** The model identified the liability of automated triage and generated **Use Case 2 (Emergency Red Flag Detection)**, establishing a deterministic safety layer to bypass the ML engine during acute medical emergencies.
+*   **Prompt 2 (Data Privacy):** *"Please revise the requirements markdown document to ensure strict compliance with the EU GDPR. Specifically, integrate requirements for handling 'special category' health data."*
+    *   **Architectural Result:** The model mapped the legal constraints to explicit system features, generating **Use Case 3** and specific functional requirements (`FR-G1`, `FR-G2`) for auditable consent and cascading database deletion protocols.
