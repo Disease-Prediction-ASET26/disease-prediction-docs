@@ -1,20 +1,20 @@
 # Requirements Analysis Document: Disease Prediction Application
 
 ## 1. Introduction
-This document outlines the requirements analysis for the Disease Prediction App, an AI-driven healthcare tool designed to bridge the communication gap between patients and medical professionals. The application allows users to input their symptoms and receives a calibrated probability of potential diseases, paired with detailed explanations and precautions[cite: 1]. 
+This document outlines the requirements analysis for the Disease Prediction App, an AI-driven healthcare tool designed to bridge the communication gap between patients and medical professionals. The application allows users to input their symptoms and receives a calibrated probability of potential diseases, paired with detailed explanations and precautions. 
 
 To optimize the patient journey, the app bypasses the traditional family doctor bottleneck for non-subsidized care by acting as an AI triage system. If the system detects a high probability of a specific condition, it directly routes the patient to the relevant specialist. Furthermore, strict adherence to General Data Protection Regulation (GDPR) standards is a core foundational requirement.
 
 ## 2. Actors Identification
 *   **Patient (Primary Actor):** An end-user experiencing symptoms who utilizes the application for self-assessment, triage, and direct specialist routing.
 *   **Specialist Doctor (Secondary Actor):** A specialized medical professional who uses the system to receive patient symptom reports and AI predictions prior to consultation.
-*   **Machine Learning System (System Actor):** The backend predictive engine responsible for analyzing inputted symptoms and calculating disease probabilities[cite: 1].
+*   **Machine Learning System (System Actor):** The backend predictive engine responsible for analyzing inputted symptoms and calculating disease probabilities.
 *   **Data Protection Officer / Administrator (Support Actor):** IT and compliance personnel responsible for maintaining system security, updating ML models, and ensuring GDPR compliance.
 
 ## 3. Major System Components
-1.  **Patient Interface:** A dashboard for symptom input (text and structured checklist)[cite: 1], viewing predictions, and managing data privacy settings.
-2.  **Predictive Engine & Triage Module:** The core ML component that predicts diseases, calculates probability scores, provides explanations[cite: 1], and maps the predicted disease to the correct medical specialty.
-3.  **Specialist Doctor Interface:** A secure dashboard where specialists receive and review comprehensive symptom reports and ML predictions[cite: 1].
+1.  **Patient Interface:** A dashboard for symptom input (text and structured checklist), viewing predictions, and managing data privacy settings.
+2.  **Predictive Engine & Triage Module:** The core ML component that predicts diseases, calculates probability scores, provides explanations, and maps the predicted disease to the correct medical specialty.
+3.  **Specialist Doctor Interface:** A secure dashboard where specialists receive and review comprehensive symptom reports and ML predictions.
 4.  **Security & Privacy Module (GDPR):** The infrastructure managing explicit user consent, end-to-end encryption of health data, and automated handling of "Right to be Forgotten" requests.
 
 ## 4. Use Case Scenarios
@@ -23,8 +23,8 @@ To optimize the patient journey, the app bypasses the traditional family doctor 
 *   **Actor:** Patient
 *   **Main Success Scenario:**
     1. The patient explicitly consents to health data processing.
-    2. The patient inputs symptoms using a structured checklist and free-text[cite: 1].
-    3. The predictive engine outputs a list of the most likely diseases with probability scores[cite: 1].
+    2. The patient inputs symptoms using a structured checklist and free-text.
+    3. The predictive engine outputs a list of the most likely diseases with probability scores.
     4. The system suggests a direct consultation with a specific Specialist Doctor.
     5. The patient forwards their secure report to an available specialist in the network.
 
@@ -47,12 +47,12 @@ To optimize the patient journey, the app bypasses the traditional family doctor 
 ### Functional Requirements (FR)
 | ID | Description |
 | :--- | :--- |
-| **FR-P1** | The system shall allow users to describe symptoms via free text or a structured checklist[cite: 1]. |
-| **FR-P2** | The system shall output a list of likely diseases alongside a calibrated probability score[cite: 1]. |
-| **FR-P3** | Every prediction shall be paired with a disease description, system explanation, and precautions[cite: 1]. |
+| **FR-P1** | The system shall allow users to describe symptoms via free text or a structured checklist. |
+| **FR-P2** | The system shall output a list of likely diseases alongside a calibrated probability score. |
+| **FR-P3** | Every prediction shall be paired with a disease description, system explanation, and precautions. |
 | **FR-P4** | The system shall map predicted diseases to specific medical specialties for direct routing. |
 | **FR-P5** | The system shall detect critical emergency symptoms and redirect the user to emergency services, halting standard triage. |
-| **FR-D1** | The system shall provide a secure inbox for doctors to review patient symptom reports[cite: 1]. |
+| **FR-D1** | The system shall provide a secure inbox for doctors to review patient symptom reports. |
 | **FR-G1** | The system shall provide a mechanism for users to grant and revoke explicit consent for health data processing. |
 | **FR-G2** | The system shall allow users to permanently delete their account and associated medical data. |
 
@@ -63,9 +63,9 @@ To optimize the patient journey, the app bypasses the traditional family doctor 
 | **NFR-2** | **Data Minimization:** Health data used to fine-tune future ML models must be stripped of PII prior to inclusion in training datasets. |
 
 ## 6. End of Semester Implementation Scope
-*   **Symptom Input & Triage Module:** Implementation of the checklist, ML prediction engine, and basic specialty mapping logic[cite: 1].
+*   **Symptom Input & Triage Module:** Implementation of the checklist, ML prediction engine, and basic specialty mapping logic.
 *   **Emergency Guardrails:** Hardcoded detection of critical symptoms to trigger emergency alerts.
-*   **Dual Interface MVP:** A Patient Portal for assessments and a Doctor Portal for reviewing submitted reports[cite: 1].
+*   **Dual Interface MVP:** A Patient Portal for assessments and a Doctor Portal for reviewing submitted reports.
 *   **Basic GDPR Framework:** User consent banners and a functional "Delete Account" database purge endpoint.
 
 ## 7. Use of Artificial Intelligence
