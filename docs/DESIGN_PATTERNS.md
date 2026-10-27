@@ -114,14 +114,6 @@ that makes the design cleaner, not a label bolted on.
   model choice lives in one place and pairs cleanly with the Strategy pattern.
 
 ---
-**Factory Method (Creational)** — `prediction_service/factory.py`
-(`ModelFactory`, `RandomForestFactory`, `KNNFactory`)
-- *What:* `ModelFactory.create_classifier()` returns the right strategy; concrete
-  factories decide which one.
-- *Why:* Callers obtain a classifier without naming the concrete class, so the
-  model choice lives in one place and pairs cleanly with the Strategy pattern.
-
----
 
 ## 3. Class diagrams
 
