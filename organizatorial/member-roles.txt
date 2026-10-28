@@ -1,13 +1,13 @@
 Project: Disease Prediction App
 Phase: Week 2 - Configuration and Research
 
-Team Roles and Responsibilities 
+Team Roles and Responsibilities
 
 (Week 2):
 
 1. Alexandru Picioroagă (MSAI1)
    - Roles: DevOps Engineer & AI Researcher
-   - Week 2 Tasks: 
+   - Week 2 Tasks:
      * Configuration (DevOps): Initialize the Git repository, configure Docker containers for the team's development environment, and set up the initial CI/CD pipeline.
      * Research (AI): Analyze the provided Kaggle datasets to determine data cleaning requirements and evaluate potential machine learning algorithms.
 

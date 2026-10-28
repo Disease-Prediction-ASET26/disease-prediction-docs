@@ -32,7 +32,6 @@ are **not** counted as our own implementations.
 | Observer | Behavioral | `ApplicationEventPublisher` + `@EventListener` | Publishes application events to subscribed listeners. |
 | Strategy | Behavioral | `HandlerMapping`, `ViewResolver` | Pluggable algorithms selected behind a common interface. |
 
-
 ---
 
 ## 2. Patterns we implemented ourselves
@@ -81,7 +80,7 @@ that makes the design cleaner, not a label bolted on.
 ### Alex R — Chain of Responsibility + Template Method (Java backend)
 
 **Chain of Responsibility (Behavioral)** — `service/redflag/` (`RedFlagHandler`
-+ concrete handlers)
+- concrete handlers)
 - *What:* An assessment passes along a chain of red-flag checks; the first match
   raises the emergency and stops the chain.
 - *Why:* Directly models the emergency red-flag intercept (Use Case 2). Rules are
@@ -194,6 +193,3 @@ and a teammate's Observer PR was reviewed against the pattern's required roles).
 > cleaner, not be enforced as a label. Show me where each pattern should live
 > naturally in the architecture (domain vs service), and how to keep per-member
 > ownership traceable for grading without that folder."
-
-
-
