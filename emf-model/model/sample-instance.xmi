@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dp:DiseasePredictionSystem
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:dp="http://www.diseaseprediction.com/model/1.0">
+
+  <!-- ===== Catalogue ===== -->
+  <diseases diseaseId="D1" name="Influenza" specialty="General Medicine"
+      description="Viral infection of the respiratory tract.">
+    <precautions precautionId="P1" description="Rest and stay hydrated"/>
+    <precautions precautionId="P2" description="Take antivirals if prescribed"/>
+  </diseases>
+  <diseases diseaseId="D2" name="Common Cold" specialty="General Medicine"
+      description="Mild viral upper-respiratory illness."/>
+
+  <!-- ===== Safety rules ===== -->
+  <redFlagRules ruleId="R1" name="Severe chest pain" minSeverity="SEVERE"
+      emergencyMessage="Call emergency services immediately." active="true"/>
+
+  <!-- ===== ML model ===== -->
+  <models modelId="M1" version="1.3.0" algorithm="GradientBoosting"
+      calibrationMethod="Isotonic" active="true"/>
+
+  <!-- ===== Checklist (Composite pattern) ===== -->
+  <checklist checklistId="C1" version="2026.1">
+    <root name="All symptoms">
+      <children xsi:type="dp:SymptomGroup" name="Respiratory">
+        <children xsi:type="dp:Symptom" symptomId="S1" name="Cough"
+            bodyArea="Chest" synonyms="hacking tussis"/>
+        <children xsi:type="dp:Symptom" symptomId="S2" name="Fever"
+            bodyArea="Systemic"/>
+      </children>
+    </root>
+  </checklist>
+
+  <!-- ===== Actors ===== -->
+  <doctors userId="U-DOC-1" email="dr.smith@clinic.com" fullName="Dr. Smith"
+      role="DOCTOR" specialty="General Medicine" licenseNumber="LIC-9981"
+      verified="true" inbox="//@reports.0"/>
+
+  <patients userId="U-PAT-1" email="jane.doe@mail.com" fullName="Jane Doe"
+      role="PATIENT" consentGiven="true">
+    <assessments assessmentId="A1" freeTextDescription="Cough and fever for 3 days"
+        emergencyDetected="false" result="//@patients.0/@assessments.0/@result.0">
+      <symptomEntries entryId="E1" rawText="persistent cough" severity="MODERATE"
+          durationDays="3" mapped="true" symptom="//@checklist/@root/@children.0/@children.0"/>
+      <symptomEntries entryId="E2" rawText="fever 38.5C" severity="MODERATE"
+          durationDays="3" mapped="true" symptom="//@checklist/@root/@children.0/@children.1"/>
+      <result resultId="PR1" disclaimer="This is not a medical diagnosis">
+        <predictions rank="1" probability="0.72" disease="//@diseases.0">
+          <explanation summary="High weight on fever + cough duration"/>
+        </predictions>
+        <predictions rank="2" probability="0.21" disease="//@diseases.1"/>
+      </result>
+    </assessments>
+  </patients>
+
+  <!-- ===== Report routed to the doctor ===== -->
+  <reports reportId="REP1" status="SENT"
+      assessment="//@patients.0/@assessments.0"
+      recipient="//@doctors.0"
+      unmappedSymptoms="night sweats"/>
+
+</dp:DiseasePredictionSystem>

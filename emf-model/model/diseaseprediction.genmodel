@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel"
+    modelDirectory="/diseaseprediction.model/src-gen"
+    modelPluginID="diseaseprediction.model"
+    modelName="DiseasePrediction"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="17.0"
+    copyrightFields="false"
+    operationReflection="true">
+  <foreignModel>diseaseprediction.ecore</foreignModel>
+  <genPackages prefix="Diseaseprediction"
+      basePackage="com.diseaseprediction"
+      disposableProviderFactory="true"
+      ecorePackage="diseaseprediction.ecore#/">
+    <genEnums typeSafeEnumCompatible="false"
+        ecoreEnum="diseaseprediction.ecore#//Severity">
+      <genEnumLiterals ecoreEnumLiteral="diseaseprediction.ecore#//Severity/MILD"/>
+      <genEnumLiterals ecoreEnumLiteral="diseaseprediction.ecore#//Severity/MODERATE"/>
+      <genEnumLiterals ecoreEnumLiteral="diseaseprediction.ecore#//Severity/SEVERE"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false"
+        ecoreEnum="diseaseprediction.ecore#//ReportStatus">
+      <genEnumLiterals ecoreEnumLiteral="diseaseprediction.ecore#//ReportStatus/DRAFT"/>
+      <genEnumLiterals ecoreEnumLiteral="diseaseprediction.ecore#//ReportStatus/SENT"/>
+      <genEnumLiterals ecoreEnumLiteral="diseaseprediction.ecore#//ReportStatus/OPENED"/>
+      <genEnumLiterals ecoreEnumLiteral="diseaseprediction.ecore#//ReportStatus/REVIEWED"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false"
+        ecoreEnum="diseaseprediction.ecore#//UserRole">
+      <genEnumLiterals ecoreEnumLiteral="diseaseprediction.ecore#//UserRole/PATIENT"/>
+      <genEnumLiterals ecoreEnumLiteral="diseaseprediction.ecore#//UserRole/DOCTOR"/>
+      <genEnumLiterals ecoreEnumLiteral="diseaseprediction.ecore#//UserRole/ADMIN"/>
+    </genEnums>
+    <genClasses ecoreClass="diseaseprediction.ecore#//User"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//Patient"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//Doctor"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//Administrator"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//Assessment"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//SymptomEntry"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//SymptomComponent"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//Symptom"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//SymptomGroup"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//SymptomChecklist"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//PredictionResult"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//DiseasePrediction"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//Explanation"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//Disease"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//Precaution"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//RedFlagRule"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//Report"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//MLModel"/>
+    <genClasses ecoreClass="diseaseprediction.ecore#//DiseasePredictionSystem"/>
+  </genPackages>
+</genmodel:GenModel>

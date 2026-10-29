@@ -1,0 +1,218 @@
+@startuml diseaseprediction-eclipse
+' Eclipse Ecore Tools "look-alike": pale-yellow boxes + E badges + EMF feature syntax
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Segoe UI
+skinparam ArrowColor #555555
+skinparam class {
+  BackgroundColor #FFFFCC
+  BorderColor #A0A000
+  HeaderBackgroundColor #FFFFCC
+  AttributeFontColor #000000
+  StereotypeEClassBackgroundColor #A9C9E2
+  StereotypeEEnumBackgroundColor #E2B6A9
+  StereotypeEInterfaceBackgroundColor #A9C9E2
+}
+hide empty members
+hide circle
+title Disease Prediction - Assessment Component (Ecore)
+
+' ===================== Enumerations (E badge) =====================
+enum Severity <<(E,#E2B6A9)>> {
+  MILD
+  MODERATE
+  SEVERE
+}
+enum ReportStatus <<(E,#E2B6A9)>> {
+  DRAFT
+  SENT
+  OPENED
+  REVIEWED
+}
+enum UserRole <<(E,#E2B6A9)>> {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+' ===================== User hierarchy =====================
+abstract class User <<(E,#A9C9E2)>> {
+  userId : EString
+  email : EString
+  passwordHash : EString
+  fullName : EString
+  role : UserRole
+  createdAt : EDate
+  --
+  login(email : EString, password : EString) : EBoolean
+  logout() : void
+}
+
+class Patient <<(E,#A9C9E2)>> {
+  dateOfBirth : EDate
+  consentGiven : EBoolean
+  consentDate : EDate
+  --
+  startAssessment() : Assessment
+  giveConsent() : void
+  revokeConsent() : void
+}
+
+class Doctor <<(E,#A9C9E2)>> {
+  specialty : EString
+  licenseNumber : EString
+  verified : EBoolean
+  --
+  openReport(report : Report) : Report
+}
+
+class Administrator <<(E,#A9C9E2)>> {
+  verifyDoctor(doctor : Doctor) : void
+  deployModel(model : MLModel) : void
+}
+
+' ===================== Assessment aggregate =====================
+class Assessment <<(E,#A9C9E2)>> {
+  assessmentId : EString
+  createdAt : EDate
+  freeTextDescription : EString
+  emergencyDetected : EBoolean
+  --
+  addSymptomEntry(entry : SymptomEntry) : void
+  checkRedFlags(rules : RedFlagRule) : EBoolean
+  submit() : PredictionResult
+}
+
+class SymptomEntry <<(E,#A9C9E2)>> {
+  entryId : EString
+  rawText : EString
+  severity : Severity
+  durationDays : EInt
+  mapped : EBoolean
+  --
+  mapToSymptom() : Symptom
+}
+
+' ===================== Symptom taxonomy (Composite) =====================
+interface SymptomComponent <<(E,#A9C9E2)>> {
+  name : EString
+  --
+  getSymptoms() : Symptom
+}
+
+class Symptom <<(E,#A9C9E2)>> {
+  symptomId : EString
+  bodyArea : EString
+  synonyms : EString
+}
+
+class SymptomGroup <<(E,#A9C9E2)>> {
+}
+
+class SymptomChecklist <<(E,#A9C9E2)>> {
+  checklistId : EString
+  version : EString
+}
+
+' ===================== Prediction result aggregate =====================
+class PredictionResult <<(E,#A9C9E2)>> {
+  resultId : EString
+  generatedAt : EDate
+  disclaimer : EString
+  --
+  getTopPredictions(n : EInt) : DiseasePrediction
+}
+
+class DiseasePrediction <<(E,#A9C9E2)>> {
+  rank : EInt
+  probability : EDouble
+}
+
+class Explanation <<(E,#A9C9E2)>> {
+  summary : EString
+}
+
+' ===================== Disease catalogue =====================
+class Disease <<(E,#A9C9E2)>> {
+  diseaseId : EString
+  name : EString
+  description : EString
+  specialty : EString
+}
+
+class Precaution <<(E,#A9C9E2)>> {
+  precautionId : EString
+  description : EString
+}
+
+' ===================== Safety / reporting / ML =====================
+class RedFlagRule <<(E,#A9C9E2)>> {
+  ruleId : EString
+  name : EString
+  minSeverity : Severity
+  emergencyMessage : EString
+  active : EBoolean
+  --
+  matches(assessment : Assessment) : EBoolean
+}
+
+class Report <<(E,#A9C9E2)>> {
+  reportId : EString
+  status : ReportStatus
+  createdAt : EDate
+  sentAt : EDate
+  clinicalNotes : EString
+  unmappedSymptoms : EString
+  --
+  send(doctor : Doctor) : void
+  markReviewed(notes : EString) : void
+}
+
+class MLModel <<(E,#A9C9E2)>> {
+  modelId : EString
+  version : EString
+  algorithm : EString
+  calibrationMethod : EString
+  trainedAt : EDate
+  active : EBoolean
+  --
+  predict(entries : SymptomEntry) : PredictionResult
+}
+
+' ===================== Root container =====================
+class DiseasePredictionSystem <<(E,#A9C9E2)>> {
+}
+
+' ===================== Inheritance / realization =====================
+User <|-- Patient
+User <|-- Doctor
+User <|-- Administrator
+SymptomComponent <|.. Symptom
+SymptomComponent <|.. SymptomGroup
+
+' ===================== Composition (containment) =====================
+Patient "1" *-- "0..*" Assessment : assessments
+Assessment "1" *-- "0..*" SymptomEntry : symptomEntries
+Assessment "1" *-- "0..1" PredictionResult : result
+PredictionResult "1" *-- "0..*" DiseasePrediction : predictions
+DiseasePrediction "1" *-- "0..1" Explanation : explanation
+Disease "1" *-- "0..*" Precaution : precautions
+SymptomGroup "1" *-- "0..*" SymptomComponent : children
+SymptomChecklist "1" *-- "0..1" SymptomGroup : root
+DiseasePredictionSystem *-- "0..*" Patient
+DiseasePredictionSystem *-- "0..*" Doctor
+DiseasePredictionSystem *-- "0..*" Administrator
+DiseasePredictionSystem *-- "0..*" Disease
+DiseasePredictionSystem *-- "0..*" Report
+DiseasePredictionSystem *-- "0..*" RedFlagRule
+DiseasePredictionSystem *-- "0..*" MLModel
+DiseasePredictionSystem *-- "0..1" SymptomChecklist : checklist
+
+' ===================== Associations (non-containment) =====================
+SymptomEntry "0..*" --> "0..1" Symptom : symptom
+DiseasePrediction "0..*" --> "1" Disease : disease
+Report "0..*" --> "1" Assessment : assessment
+Report "0..*" --> "0..1" Doctor : recipient
+Doctor "0..1" --> "0..*" Report : inbox
+
+@enduml
