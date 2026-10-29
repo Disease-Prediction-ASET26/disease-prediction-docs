@@ -87,3 +87,15 @@ To export an image for a report: in bpmn.io or Camunda Modeler use
 - Every diagram-interchange `bpmnElement` resolves to a model element.
 - `incoming` / `outgoing` wiring is consistent for all sequence flows
   (the check BPMN tools apply on load).
+
+## AI Usage
+
+This BPMN model was produced with the assistance of **Kiro CLI**, an agentic AI
+coding assistant.
+
+- **Model/version:** Kiro CLI running in "Auto" mode (the underlying model is
+  selected dynamically on the server, so a fixed version string is not exposed
+  to the session). The assistant read the backend domain classes in
+  `disease-prediction-be` to ground the process in the actual system behavior.
+
+The AI generated the BPMN 2.0 XML, validated its structure. The modeling decisions were reviewed by the team.
