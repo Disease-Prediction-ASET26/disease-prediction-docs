@@ -98,4 +98,41 @@ coding assistant.
   to the session). The assistant read the backend domain classes in
   `disease-prediction-be` to ground the process in the actual system behavior.
 
+  **Prompt:** Generate a valid BPMN 2.0 XML file (including complete <bpmndi:BPMNDiagram> layout data) for a "Disease Prediction System". The collaboration requires 3 participant pools, sequence flows, and exact node names as follows:
+
+  1. Patient Pool:
+  Start ("Decides to check symptoms") -> Task ("Start assessment") -> Task ("Describe and add symptom entries") -> Event Gateway ("Await system response").
+
+  Branch A: Message Catch ("Emergency alert received") -> Terminate End ("Seek emergency care").
+
+  Branch B: Message Catch ("Prediction result received") -> Task ("Review predictions and disclaimer") -> Exclusive Gateway ("Forward to doctor?").
+
+  "No" -> End ("Assessment complete").
+
+  "Yes" -> Task ("Forward report to doctor") -> Message Catch ("Clinical review received") -> End ("Assessment complete").
+
+  2. Disease Prediction System Pool:
+  Message Start ("Assessment submitted") -> Task ("Map symptom entries to canonical symptoms") -> Task ("Check red-flag rules") -> Exclusive Gateway ("Emergency detected?").
+
+  "Yes": Task ("Raise emergency alert") -> End ("Flow stopped (emergency)").
+
+  "No": Task ("Run ML model prediction") -> Task ("Build ranked predictions and explanation") -> Task ("Persist prediction result and draft report") -> Task ("Send report to doctor inbox") -> End ("Result delivered").
+
+  3. Doctor Pool:
+  Message Start ("Report received in inbox") -> Task ("Open report") -> Task ("Review predictions and patient data") -> Task ("Add clinical notes and mark reviewed") -> End ("Review complete").
+
+  Message Flows (Between Pools):
+
+  Patient ("Describe and add symptom entries") -> System (Start Event)
+
+  System ("Raise emergency alert") -> Patient ("Emergency alert received")
+
+  System ("Persist prediction result...") -> Patient ("Prediction result received")
+
+  System ("Send report to doctor inbox") -> Doctor (Start Event)
+
+  Doctor ("Add clinical notes...") -> Patient ("Clinical review received")
+
+  Ensure all processes are set to isExecutable="false", all elements are properly linked with <bpmn:sequenceFlow>, and complete DI bounding box/waypoint data is provided so it renders correctly in standard BPMN viewers. Output ONLY the raw XML code.
+
 The AI generated the BPMN 2.0 XML, validated its structure. The modeling decisions were reviewed by the team.
