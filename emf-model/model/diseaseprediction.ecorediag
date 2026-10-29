@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notation:Diagram xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation"
+    xmi:id="_dp_diagram_0001"
+    type="EcoreTools"
+    name="diseaseprediction.ecore"
+    measurementUnit="Pixel">
+  <element xmi:type="ecore:EPackage" href="diseaseprediction.ecore#/"/>
+
+  <!-- =========================== ENUMS (type 1002) =========================== -->
+  <!-- Severity (classifier 0) -->
+  <children xmi:type="notation:Node" xmi:id="_n_Severity" type="1002">
+    <children xmi:type="notation:Node" xmi:id="_n_Severity_name" type="2003"/>
+    <children xmi:type="notation:Node" xmi:id="_n_Severity_lits" type="6002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Severity_lits"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Severity_lits"/>
+    </children>
+    <element xmi:type="ecore:EEnum" href="diseaseprediction.ecore#//Severity"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_Severity" x="40" y="40" width="160" height="110"/>
+  </children>
+
+  <!-- ReportStatus (classifier 1) -->
+  <children xmi:type="notation:Node" xmi:id="_n_ReportStatus" type="1002">
+    <children xmi:type="notation:Node" xmi:id="_n_ReportStatus_name" type="2003"/>
+    <children xmi:type="notation:Node" xmi:id="_n_ReportStatus_lits" type="6002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_ReportStatus_lits"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_ReportStatus_lits"/>
+    </children>
+    <element xmi:type="ecore:EEnum" href="diseaseprediction.ecore#//ReportStatus"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_ReportStatus" x="240" y="40" width="160" height="110"/>
+  </children>
+
+  <!-- UserRole (classifier 2) -->
+  <children xmi:type="notation:Node" xmi:id="_n_UserRole" type="1002">
+    <children xmi:type="notation:Node" xmi:id="_n_UserRole_name" type="2003"/>
+    <children xmi:type="notation:Node" xmi:id="_n_UserRole_lits" type="6002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_UserRole_lits"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_UserRole_lits"/>
+    </children>
+    <element xmi:type="ecore:EEnum" href="diseaseprediction.ecore#//UserRole"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_UserRole" x="440" y="40" width="160" height="100"/>
+  </children>
+
+  <!-- =========================== CLASSES (type 1001) =========================== -->
+  <!-- User (classifier 3) -->
+  <children xmi:type="notation:Node" xmi:id="_n_User" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_User_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_User_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_User_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_User_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_User_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_User_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_User_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//User"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_User" x="40" y="220" width="200" height="180"/>
+  </children>
+
+  <!-- Patient (classifier 4) -->
+  <children xmi:type="notation:Node" xmi:id="_n_Patient" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_Patient_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_Patient_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Patient_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Patient_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_Patient_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Patient_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Patient_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//Patient"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_Patient" x="40" y="460" width="200" height="170"/>
+  </children>
+
+  <!-- Doctor (classifier 5) -->
+  <children xmi:type="notation:Node" xmi:id="_n_Doctor" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_Doctor_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_Doctor_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Doctor_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Doctor_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_Doctor_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Doctor_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Doctor_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//Doctor"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_Doctor" x="300" y="460" width="200" height="170"/>
+  </children>
+
+  <!-- Administrator (classifier 6) -->
+  <children xmi:type="notation:Node" xmi:id="_n_Administrator" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_Administrator_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_Administrator_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Admin_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Admin_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_Administrator_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Admin_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Admin_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//Administrator"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_Administrator" x="560" y="460" width="200" height="150"/>
+  </children>
+
+  <!-- Assessment (classifier 7) -->
+  <children xmi:type="notation:Node" xmi:id="_n_Assessment" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_Assessment_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_Assessment_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Assessment_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Assessment_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_Assessment_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Assessment_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Assessment_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//Assessment"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_Assessment" x="840" y="220" width="220" height="200"/>
+  </children>
+
+  <!-- SymptomEntry (classifier 8) -->
+  <children xmi:type="notation:Node" xmi:id="_n_SymptomEntry" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomEntry_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomEntry_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_SE_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_SE_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomEntry_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_SE_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_SE_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//SymptomEntry"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_SymptomEntry" x="840" y="480" width="220" height="190"/>
+  </children>
+
+  <!-- SymptomComponent (classifier 9) -->
+  <children xmi:type="notation:Node" xmi:id="_n_SymptomComponent" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomComponent_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomComponent_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_SC_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_SC_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomComponent_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_SC_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_SC_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//SymptomComponent"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_SymptomComponent" x="1120" y="40" width="210" height="120"/>
+  </children>
+
+  <!-- Symptom (classifier 10) -->
+  <children xmi:type="notation:Node" xmi:id="_n_Symptom" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_Symptom_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_Symptom_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Symptom_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Symptom_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_Symptom_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Symptom_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Symptom_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//Symptom"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_Symptom" x="1120" y="240" width="210" height="150"/>
+  </children>
+
+  <!-- SymptomGroup (classifier 11) -->
+  <children xmi:type="notation:Node" xmi:id="_n_SymptomGroup" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomGroup_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomGroup_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_SG_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_SG_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomGroup_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_SG_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_SG_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//SymptomGroup"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_SymptomGroup" x="1400" y="240" width="210" height="130"/>
+  </children>
+
+  <!-- SymptomChecklist (classifier 12) -->
+  <children xmi:type="notation:Node" xmi:id="_n_SymptomChecklist" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomChecklist_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomChecklist_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_SCL_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_SCL_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_SymptomChecklist_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_SCL_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_SCL_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//SymptomChecklist"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_SymptomChecklist" x="1400" y="40" width="210" height="130"/>
+  </children>
+
+  <!-- PredictionResult (classifier 13) -->
+  <children xmi:type="notation:Node" xmi:id="_n_PredictionResult" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_PredictionResult_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_PredictionResult_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_PR_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_PR_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_PredictionResult_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_PR_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_PR_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//PredictionResult"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_PredictionResult" x="440" y="220" width="220" height="180"/>
+  </children>
+
+  <!-- DiseasePrediction (classifier 14) -->
+  <children xmi:type="notation:Node" xmi:id="_n_DiseasePrediction" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_DiseasePrediction_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_DiseasePrediction_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_DP_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_DP_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_DiseasePrediction_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_DP_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_DP_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//DiseasePrediction"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_DiseasePrediction" x="440" y="460" width="220" height="150"/>
+  </children>
+
+  <!-- Explanation (classifier 15) -->
+  <children xmi:type="notation:Node" xmi:id="_n_Explanation" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_Explanation_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_Explanation_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Exp_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Exp_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_Explanation_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Exp_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Exp_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//Explanation"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_Explanation" x="440" y="680" width="200" height="110"/>
+  </children>
+
+  <!-- Disease (classifier 16) -->
+  <children xmi:type="notation:Node" xmi:id="_n_Disease" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_Disease_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_Disease_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Dis_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Dis_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_Disease_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Dis_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Dis_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//Disease"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_Disease" x="40" y="680" width="200" height="160"/>
+  </children>
+
+  <!-- Precaution (classifier 17) -->
+  <children xmi:type="notation:Node" xmi:id="_n_Precaution" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_Precaution_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_Precaution_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Prec_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Prec_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_Precaution_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Prec_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Prec_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//Precaution"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_Precaution" x="40" y="880" width="200" height="100"/>
+  </children>
+
+  <!-- RedFlagRule (classifier 18) -->
+  <children xmi:type="notation:Node" xmi:id="_n_RedFlagRule" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_RedFlagRule_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_RedFlagRule_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_RFR_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_RFR_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_RedFlagRule_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_RFR_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_RFR_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//RedFlagRule"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_RedFlagRule" x="1120" y="480" width="220" height="180"/>
+  </children>
+
+  <!-- Report (classifier 19) -->
+  <children xmi:type="notation:Node" xmi:id="_n_Report" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_Report_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_Report_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Rep_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Rep_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_Report_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_Rep_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_Rep_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//Report"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_Report" x="560" y="680" width="240" height="210"/>
+  </children>
+
+  <!-- MLModel (classifier 20) -->
+  <children xmi:type="notation:Node" xmi:id="_n_MLModel" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_MLModel_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_MLModel_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_ML_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_ML_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_MLModel_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_ML_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_ML_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//MLModel"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_MLModel" x="1400" y="480" width="220" height="190"/>
+  </children>
+
+  <!-- DiseasePredictionSystem (classifier 21) -->
+  <children xmi:type="notation:Node" xmi:id="_n_DiseasePredictionSystem" type="1001">
+    <children xmi:type="notation:Node" xmi:id="_n_DiseasePredictionSystem_name" type="4001"/>
+    <children xmi:type="notation:Node" xmi:id="_n_DiseasePredictionSystem_attrs" type="5001">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_DPS_attrs"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_DPS_attrs"/>
+    </children>
+    <children xmi:type="notation:Node" xmi:id="_n_DiseasePredictionSystem_ops" type="5002">
+      <styles xmi:type="notation:SortingStyle" xmi:id="_s_DPS_ops"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_f_DPS_ops"/>
+    </children>
+    <element xmi:type="ecore:EClass" href="diseaseprediction.ecore#//DiseasePredictionSystem"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_b_DiseasePredictionSystem" x="840" y="760" width="240" height="230"/>
+  </children>
+
+  <styles xmi:type="notation:DiagramStyle" xmi:id="_dp_diagram_style"/>
+
+  <!-- =========================== INHERITANCE (type 3002) =========================== -->
+  <edges xmi:type="notation:Edge" xmi:id="_e_Patient_User" type="3002"
+      source="_n_Patient" target="_n_User">
+    <element xsi:nil="true"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Patient_User"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_Doctor_User" type="3002"
+      source="_n_Doctor" target="_n_User">
+    <element xsi:nil="true"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Doctor_User"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_Administrator_User" type="3002"
+      source="_n_Administrator" target="_n_User">
+    <element xsi:nil="true"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Administrator_User"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_Symptom_SC" type="3002"
+      source="_n_Symptom" target="_n_SymptomComponent">
+    <element xsi:nil="true"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Symptom_SC"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_SymptomGroup_SC" type="3002"
+      source="_n_SymptomGroup" target="_n_SymptomComponent">
+    <element xsi:nil="true"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_SymptomGroup_SC"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+
+  <!-- =========================== REFERENCES (type 4003) =========================== -->
+  <edges xmi:type="notation:Edge" xmi:id="_e_Patient_assessments" type="4003"
+      source="_n_Patient" target="_n_Assessment">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//Patient/assessments"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Patient_assessments"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_Assessment_entries" type="4003"
+      source="_n_Assessment" target="_n_SymptomEntry">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//Assessment/symptomEntries"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Assessment_entries"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_Assessment_result" type="4003"
+      source="_n_Assessment" target="_n_PredictionResult">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//Assessment/result"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Assessment_result"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_SE_symptom" type="4003"
+      source="_n_SymptomEntry" target="_n_Symptom">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//SymptomEntry/symptom"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_SE_symptom"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_SG_children" type="4003"
+      source="_n_SymptomGroup" target="_n_SymptomComponent">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//SymptomGroup/children"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_SG_children"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_SCL_root" type="4003"
+      source="_n_SymptomChecklist" target="_n_SymptomGroup">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//SymptomChecklist/root"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_SCL_root"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_PR_predictions" type="4003"
+      source="_n_PredictionResult" target="_n_DiseasePrediction">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//PredictionResult/predictions"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_PR_predictions"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_DP_disease" type="4003"
+      source="_n_DiseasePrediction" target="_n_Disease">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//DiseasePrediction/disease"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_DP_disease"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_DP_explanation" type="4003"
+      source="_n_DiseasePrediction" target="_n_Explanation">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//DiseasePrediction/explanation"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_DP_explanation"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_Disease_precautions" type="4003"
+      source="_n_Disease" target="_n_Precaution">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//Disease/precautions"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Disease_precautions"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_Report_assessment" type="4003"
+      source="_n_Report" target="_n_Assessment">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//Report/assessment"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Report_assessment"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_Report_recipient" type="4003"
+      source="_n_Report" target="_n_Doctor">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//Report/recipient"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Report_recipient"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+  <edges xmi:type="notation:Edge" xmi:id="_e_Doctor_inbox" type="4003"
+      source="_n_Doctor" target="_n_Report">
+    <element xmi:type="ecore:EReference" href="diseaseprediction.ecore#//Doctor/inbox"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_bp_Doctor_inbox"
+        points="[0,0,0,0]$[0,0,0,0]"/>
+  </edges>
+
+</notation:Diagram>

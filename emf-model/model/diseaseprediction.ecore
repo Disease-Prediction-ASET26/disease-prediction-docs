@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    name="diseaseprediction"
+    nsURI="http://www.diseaseprediction.com/model/1.0"
+    nsPrefix="dp">
+
+  <!-- ========================================================= -->
+  <!-- Enumerations                                              -->
+  <!-- ========================================================= -->
+  <eClassifiers xsi:type="ecore:EEnum" name="Severity">
+    <eLiterals name="MILD"/>
+    <eLiterals name="MODERATE" value="1"/>
+    <eLiterals name="SEVERE" value="2"/>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EEnum" name="ReportStatus">
+    <eLiterals name="DRAFT"/>
+    <eLiterals name="SENT" value="1"/>
+    <eLiterals name="OPENED" value="2"/>
+    <eLiterals name="REVIEWED" value="3"/>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EEnum" name="UserRole">
+    <eLiterals name="PATIENT"/>
+    <eLiterals name="DOCTOR" value="1"/>
+    <eLiterals name="ADMIN" value="2"/>
+  </eClassifiers>
+
+  <!-- ========================================================= -->
+  <!-- Abstract user hierarchy                                   -->
+  <!-- ========================================================= -->
+  <eClassifiers xsi:type="ecore:EClass" name="User" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="userId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="email"
+        lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="passwordHash"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="fullName"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="role"
+        eType="#//UserRole"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="createdAt"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+    <eOperations name="login" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
+      <eParameters name="email" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eParameters name="password" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eOperations>
+    <eOperations name="logout"/>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="Patient" eSuperTypes="#//User">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="dateOfBirth"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="consentGiven"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="consentDate"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+    <!-- A patient owns (composition) its assessments -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assessments"
+        upperBound="-1" eType="#//Assessment" containment="true"
+        eOpposite="#//Assessment/patient"/>
+    <eOperations name="startAssessment" eType="#//Assessment"/>
+    <eOperations name="giveConsent"/>
+    <eOperations name="revokeConsent"/>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="Doctor" eSuperTypes="#//User">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="specialty"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="licenseNumber"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="verified"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <!-- Reports routed to this doctor (non-containment reference) -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="inbox"
+        upperBound="-1" eType="#//Report"
+        eOpposite="#//Report/recipient"/>
+    <eOperations name="openReport" eType="#//Report">
+      <eParameters name="report" eType="#//Report"/>
+    </eOperations>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="Administrator" eSuperTypes="#//User">
+    <eOperations name="verifyDoctor">
+      <eParameters name="doctor" eType="#//Doctor"/>
+    </eOperations>
+    <eOperations name="deployModel">
+      <eParameters name="model" eType="#//MLModel"/>
+    </eOperations>
+  </eClassifiers>
+
+  <!-- ========================================================= -->
+  <!-- Assessment aggregate (the modeled component)              -->
+  <!-- ========================================================= -->
+  <eClassifiers xsi:type="ecore:EClass" name="Assessment">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="assessmentId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="createdAt"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="freeTextDescription"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="emergencyDetected"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <!-- Composition: the entries belong to the assessment -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="symptomEntries"
+        upperBound="-1" eType="#//SymptomEntry" containment="true"
+        eOpposite="#//SymptomEntry/assessment"/>
+    <!-- Composition: one result produced per assessment -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="result"
+        eType="#//PredictionResult" containment="true"
+        eOpposite="#//PredictionResult/assessment"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="patient"
+        lowerBound="1" eType="#//Patient"
+        eOpposite="#//Patient/assessments"/>
+    <eOperations name="addSymptomEntry">
+      <eParameters name="entry" eType="#//SymptomEntry"/>
+    </eOperations>
+    <eOperations name="checkRedFlags"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
+      <eParameters name="rules" upperBound="-1" eType="#//RedFlagRule"/>
+    </eOperations>
+    <eOperations name="submit" eType="#//PredictionResult"/>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="SymptomEntry">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="entryId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="rawText"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="severity"
+        eType="#//Severity"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="durationDays"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="mapped"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assessment"
+        lowerBound="1" eType="#//Assessment"
+        eOpposite="#//Assessment/symptomEntries"/>
+    <!-- Mapped canonical symptom (reference, not containment) -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="symptom"
+        eType="#//Symptom"/>
+    <eOperations name="mapToSymptom" eType="#//Symptom"/>
+  </eClassifiers>
+
+  <!-- ========================================================= -->
+  <!-- Symptom taxonomy (Composite pattern)                      -->
+  <!-- ========================================================= -->
+  <eClassifiers xsi:type="ecore:EClass" name="SymptomComponent" abstract="true" interface="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eOperations name="getSymptoms" upperBound="-1" eType="#//Symptom"/>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="Symptom" eSuperTypes="#//SymptomComponent">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="symptomId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="bodyArea"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="synonyms"
+        upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="SymptomGroup" eSuperTypes="#//SymptomComponent">
+    <!-- Recursive composition: a group contains components -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="children"
+        upperBound="-1" eType="#//SymptomComponent" containment="true"/>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="SymptomChecklist">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="checklistId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="version"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="root"
+        eType="#//SymptomGroup" containment="true"/>
+  </eClassifiers>
+
+  <!-- ========================================================= -->
+  <!-- Prediction result aggregate                               -->
+  <!-- ========================================================= -->
+  <eClassifiers xsi:type="ecore:EClass" name="PredictionResult">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="resultId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="generatedAt"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="disclaimer"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="This is not a medical diagnosis"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="predictions"
+        upperBound="-1" eType="#//DiseasePrediction" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assessment"
+        lowerBound="1" eType="#//Assessment"
+        eOpposite="#//Assessment/result"/>
+    <eOperations name="getTopPredictions" upperBound="-1" eType="#//DiseasePrediction">
+      <eParameters name="n" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eOperations>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="DiseasePrediction">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="rank"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="probability"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="disease"
+        lowerBound="1" eType="#//Disease"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="explanation"
+        eType="#//Explanation" containment="true"/>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="Explanation">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="summary"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+
+  <!-- ========================================================= -->
+  <!-- Disease catalogue                                         -->
+  <!-- ========================================================= -->
+  <eClassifiers xsi:type="ecore:EClass" name="Disease">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="diseaseId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="description"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="specialty"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="precautions"
+        upperBound="-1" eType="#//Precaution" containment="true"/>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="Precaution">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="precautionId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="description"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+
+  <!-- ========================================================= -->
+  <!-- Safety, reporting, ML                                     -->
+  <!-- ========================================================= -->
+  <eClassifiers xsi:type="ecore:EClass" name="RedFlagRule">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="ruleId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="minSeverity"
+        eType="#//Severity"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="emergencyMessage"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="active"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eOperations name="matches"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
+      <eParameters name="assessment" eType="#//Assessment"/>
+    </eOperations>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="Report">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="reportId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="status"
+        eType="#//ReportStatus"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="createdAt"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="sentAt"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="clinicalNotes"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="unmappedSymptoms"
+        upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <!-- A report wraps exactly one assessment (reference) -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assessment"
+        lowerBound="1" eType="#//Assessment"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="recipient"
+        eType="#//Doctor" eOpposite="#//Doctor/inbox"/>
+    <eOperations name="send">
+      <eParameters name="doctor" eType="#//Doctor"/>
+    </eOperations>
+    <eOperations name="markReviewed">
+      <eParameters name="notes" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eOperations>
+  </eClassifiers>
+
+  <eClassifiers xsi:type="ecore:EClass" name="MLModel">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modelId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        iD="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="version"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="algorithm"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="calibrationMethod"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="trainedAt"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="active"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eOperations name="predict" eType="#//PredictionResult">
+      <eParameters name="entries" upperBound="-1" eType="#//SymptomEntry"/>
+    </eOperations>
+  </eClassifiers>
+
+  <!-- ========================================================= -->
+  <!-- Root container (document root for instance models)        -->
+  <!-- ========================================================= -->
+  <eClassifiers xsi:type="ecore:EClass" name="DiseasePredictionSystem">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="patients"
+        upperBound="-1" eType="#//Patient" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="doctors"
+        upperBound="-1" eType="#//Doctor" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="administrators"
+        upperBound="-1" eType="#//Administrator" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="diseases"
+        upperBound="-1" eType="#//Disease" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="reports"
+        upperBound="-1" eType="#//Report" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="redFlagRules"
+        upperBound="-1" eType="#//RedFlagRule" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="models"
+        upperBound="-1" eType="#//MLModel" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="checklist"
+        eType="#//SymptomChecklist" containment="true"/>
+  </eClassifiers>
+
+</ecore:EPackage>
