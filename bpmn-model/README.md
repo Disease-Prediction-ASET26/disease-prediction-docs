@@ -98,9 +98,8 @@ coding assistant.
   to the session). The assistant read the backend domain classes in
   `disease-prediction-be` to ground the process in the actual system behavior.
 
-  **Prompt:** Generate a valid BPMN 2.0 XML file (including complete <bpmndi:BPMNDiagram> layout data) for a "Disease Prediction System". The collaboration requires 3 participant pools, sequence flows, and exact node names as follows:
-
-  1. Patient Pool:
+- **Prompt:** Generate a valid BPMN 2.0 XML file (including complete <bpmndi:BPMNDiagram> layout data) for a "Disease Prediction System". The collaboration requires 3 participant pools, sequence flows, and exact node names as follows: 
+1. Patient Pool:
   Start ("Decides to check symptoms") -> Task ("Start assessment") -> Task ("Describe and add symptom entries") -> Event Gateway ("Await system response").
 
   Branch A: Message Catch ("Emergency alert received") -> Terminate End ("Seek emergency care").
