@@ -1,0 +1,30 @@
+Project: Disease Prediction App
+Phase: Week 2 - Configuration and Research
+
+Team Roles and Responsibilities
+
+(Week 2):
+
+1. Alexandru Picioroagă (MSAI1)
+   - Roles: DevOps Engineer & AI Researcher
+   - Week 2 Tasks:
+     * Configuration (DevOps): Initialize the Git repository, configure Docker containers for the team's development environment, and set up the initial CI/CD pipeline.
+     * Research (AI): Analyze the provided Kaggle datasets to determine data cleaning requirements and evaluate potential machine learning algorithms.
+
+2. Carla Cotea (MSAI1)
+   - Roles: Backend Developer, Frontend Developer & AI Researcher
+   - Week 2 Tasks:
+     * Configuration (Backend & Frontend): Scaffold the initial backend server (e.g., FastAPI/Node.js) and assist in setting up the base frontend repository.
+     * Research (AI & Backend): Investigate how to effectively integrate the AI model's output (calibrated probabilities) with the backend API.
+
+3. Daria Crăciun (MISS1)
+   - Roles: Backend Developer, Frontend Developer & AI Researcher
+   - Week 2 Tasks:
+     * Configuration (Frontend): Configure the frontend framework (e.g., React/Vue) and set up UI component libraries for the symptom checklist.
+     * Research (AI & Backend): Research disease symptom datasets to align frontend data collection (structured checklists) with the AI model's required input format.
+
+4. Alexandru Răduncanu (MSAI1)
+   - Roles: Backend Developer, QA/Testing Engineer & AI Researcher
+   - Week 2 Tasks:
+     * Configuration (Testing & Backend): Set up testing frameworks (e.g., PyTest, Jest) for the backend architecture and configure the test database.
+     * Research (AI & Testing): Research testing strategies for machine learning models to ensure disease predictions and probability scores can be systematically validated.

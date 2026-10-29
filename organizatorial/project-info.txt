@@ -1,0 +1,25 @@
+Project title:
+    Disease Prediction App
+
+Description:
+    Build an application in which users can describe their symptoms (text/selecting a structured checklist)
+    and the system predicts the most likely disease with calibrated probabilities.
+    Every prediction should be explained and paired with disease description and general precautions.
+    The output of the system can be a list of the most likely diseases associated with the symptoms,
+    followed by explanations and a system-calculated score (indicating the probability that a patient with those symptoms has disease X).
+
+Coordinators:
+    Alina Duca, Adrian Iftene
+
+Keywords:
+    Machine Learning, AI in Healthcare
+
+References:
+    - https://www.kaggle.com/datasets/itachi9604/disease-symptom-description-dataset
+    - https://www.kaggle.com/datasets/niyarrbarman/symptom2disease
+
+Members & Contact:
+    - Alexandru Picioroagă MSAI1
+    - Carla Cotea MSAI1
+    - Daria Crăciun MISS1
+    - Alexandru Răduncanu MSAI1
