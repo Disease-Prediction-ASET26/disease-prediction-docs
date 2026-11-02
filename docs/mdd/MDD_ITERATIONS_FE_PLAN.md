@@ -178,7 +178,7 @@ Baseline model: `disease-prediction-fe` has no application code — only CI and 
 C4 model declares the container "Patient Web App (React)" but nothing realises it. This iteration
 introduces the component model that realises that container for the prediction feature.
 
-### Structural model (component/class view) — see `diagrams/mdd/iteration3/` in this docs repo
+### Structural model (component/class view) — see `docs/mdd/iteration3/` in this docs repo
 
 ```mermaid
 classDiagram
@@ -395,7 +395,7 @@ After implementation, fold back what was learned and record decisions, e.g.:
 8. **Containerize:** root multi-stage `Dockerfile`; verify `docker build`.
 9. **Wire CI:** flip the disabled jobs in `.github/workflows/ci.yml` to real commands; keep GitFlow
    (branch `feature/patient-web-app` → PR into `develop`).
-10. **Diagrams + docs:** the Step 3 diagrams are in `diagrams/mdd/iteration3/` (this docs repo);
+10. **Diagrams + docs:** the Step 3 diagrams are in `docs/mdd/iteration3/` (this docs repo);
     keep the traceability table accurate; write the Step 6 refinements.
 
 ## 1.8 Definition of done
@@ -475,7 +475,7 @@ structure that realises it.
 | `/assessment/emergency` | `EmergencyRoute` | `EmergencyBanner` | FR-P5 emergency view (112) |
 | `*` | `NotFoundPage` | — | 404 fallback |
 
-### Structural model (routing layer) — see `diagrams/mdd/iteration4/` in this docs repo
+### Structural model (routing layer) — see `docs/mdd/iteration4/` in this docs repo
 
 ```mermaid
 classDiagram
@@ -618,7 +618,7 @@ State in the PR which checks were actually run vs. not.
 4. Wire navigation + result hand-off in `AssessmentRoute`; add the no-state guards.
 5. SPA fallback in the `Dockerfile`/static host.
 6. Tests: unit + integration per §2.5; keep `coverage/lcov.info`.
-7. The Step 3 diagrams are in `diagrams/mdd/iteration4/` (this docs repo); keep the
+7. The Step 3 diagrams are in `docs/mdd/iteration4/` (this docs repo); keep the
    traceability table accurate; write the Step 6 refinements.
 
 ## 2.8 Definition of done
