@@ -1,0 +1,26 @@
+%% MDD Iteration 2 - Before/after: baseline (declaration-only domain, no web layer)
+%% vs refined (web layer + SOA client added this iteration).
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+flowchart TB
+    subgraph BEFORE["Baseline (Iteration 0 / main)"]
+        direction TB
+        B1["domain skeletons<br/>Assessment, SymptomEntry,<br/>PredictionResult, DiseasePrediction"]
+        B2["AssessmentService<br/>(domain-coupled, no HTTP)"]
+        B3["(no controller package)"]:::missing
+        B4["(no REST endpoint)"]:::missing
+        B5["(no prediction-service client)"]:::missing
+    end
+
+    subgraph AFTER["Refined (Iteration 2)"]
+        direction TB
+        A1["AssessmentController<br/>POST /api/assessments"]
+        A2["AssessmentApiService<br/>orchestrates: emergency check + predict"]
+        A3["PredictionClient (interface)<br/>+ StubPredictionClient"]
+        A4["DTOs: AssessmentRequest/Response,<br/>PredictionResultDto, DiseasePredictionDto,<br/>ExplanationDto, SymptomEntryDto"]
+        A1 --> A2 --> A3
+        A1 -.uses.-> A4
+    end
+
+    BEFORE ==>|"add web layer + SOA client,<br/>derive from API contract"| AFTER
+
+    classDef missing stroke-dasharray: 5 5,color:#999,stroke:#999;

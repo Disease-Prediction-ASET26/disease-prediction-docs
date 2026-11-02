@@ -1,0 +1,10 @@
+%% MDD Iteration 1 - Behavioural model: parsing pipeline flow
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+flowchart LR
+    A[raw free text] --> B[Extractor: find problem entities]
+    B --> C[NegationDetector: mark negated]
+    C --> D{affirmed?}
+    D -->|yes| E[Linker: map to canonical symptom]
+    D -->|no| F[kept as negated, excluded from vector]
+    E --> G[severity-weighted feature vector]
+    G --> H[SymptomEntryDTO list]

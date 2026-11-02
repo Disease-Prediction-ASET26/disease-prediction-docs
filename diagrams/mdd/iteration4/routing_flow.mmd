@@ -1,0 +1,11 @@
+%% MDD Iteration 4 - Behavioural model: navigation flow
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+flowchart TD
+    H[/ HomePage/] -->|Start| A[/assessment AssessmentRoute/]
+    A --> S{submit result}
+    S -->|200, emergencyDetected=false| R[/assessment/result ResultRoute/]
+    S -->|200, emergencyDetected=true| E[/assessment/emergency EmergencyRoute/]
+    S -->|400/invalid| A2[stay on /assessment, show validation]
+    R -->|deep-link with no result state| A
+    E -->|deep-link with no result state| A
+    X[/unknown path/] --> NF[/\* NotFoundPage/]

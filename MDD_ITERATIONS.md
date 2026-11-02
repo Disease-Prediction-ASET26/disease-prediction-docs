@@ -218,8 +218,7 @@ API contract modelling how an assessment is submitted or how the backend reaches
 service.
 
 Model evolution this iteration: introduce the Assessment API contract and the controller/client
-structure that realises it. (Rendered diagrams:
-`disease-prediction-be/docs/diagrams/iteration2/`.)
+structure that realises it. (Rendered diagrams: `diagrams/mdd/iteration2/` in this docs repo.)
 
 API contract (the platform-independent model) — `POST /api/assessments`:
 
@@ -477,7 +476,7 @@ boundary without rewriting that code.
 - **Step 2 — ✅ same.** Web layer delegates prediction across the SOA boundary via `PredictionClient`
   (port); `StubPredictionClient` is the current adapter; `HttpPredictionClient` is the Step 6 follow-up.
 - **Step 3 — ✅ same.** API contract + controller → service → client structure modelled and rendered
-  (`disease-prediction-be/docs/diagrams/iteration2/`: `assessment_api_class`, `assessment_api_sequence`,
+  (`diagrams/mdd/iteration2/` in this docs repo: `assessment_api_class`, `assessment_api_sequence`,
   `baseline_vs_refined`, as `.mmd` + `.png`).
 - **Step 4 — ⬆️ better.** Every model element maps to Java under
   `src/main/java/com/diseaseprediction/`: `@RestController AssessmentController`; request/response and

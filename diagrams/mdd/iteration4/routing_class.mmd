@@ -1,0 +1,41 @@
+%% MDD Iteration 4 - Structural model: client-side routing layer
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+classDiagram
+    class AppRouter {
+        <<router config>>
+        +routes
+    }
+    class RootLayout {
+        +header/nav
+        +Outlet
+    }
+    class HomePage
+    class AssessmentRoute {
+        +onSubmitted(result) navigate
+    }
+    class ResultRoute {
+        +result (from router state)
+    }
+    class EmergencyRoute
+    class NotFoundPage
+    class AssessmentPage {
+        <<Iteration 3 — reused>>
+    }
+    class PredictionResultView {
+        <<Iteration 3 — reused>>
+    }
+    class EmergencyBanner {
+        <<Iteration 3 — reused>>
+    }
+
+    AppRouter --> RootLayout : mounts
+    RootLayout --> HomePage : outlet
+    RootLayout --> AssessmentRoute : outlet
+    RootLayout --> ResultRoute : outlet
+    RootLayout --> EmergencyRoute : outlet
+    RootLayout --> NotFoundPage : outlet
+    AssessmentRoute --> AssessmentPage : renders
+    AssessmentRoute ..> ResultRoute : navigate on 200
+    AssessmentRoute ..> EmergencyRoute : navigate on emergency
+    ResultRoute --> PredictionResultView : renders
+    EmergencyRoute --> EmergencyBanner : renders

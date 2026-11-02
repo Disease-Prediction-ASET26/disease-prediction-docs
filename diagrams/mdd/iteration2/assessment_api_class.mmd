@@ -1,0 +1,51 @@
+%% MDD Iteration 2 - Structural model (web layer derived from the API contract)
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+classDiagram
+    class AssessmentController {
+        -AssessmentApiService assessmentApiService
+        +submit(AssessmentRequest) ResponseEntity~AssessmentResponse~
+    }
+    class AssessmentApiService {
+        -PredictionClient predictionClient
+        +runAssessment(AssessmentRequest) AssessmentResponse
+        -detectEmergency(AssessmentRequest) boolean
+    }
+    class PredictionClient {
+        <<interface>>
+        +predict(freeText, symptomEntries) PredictionResultDto
+    }
+    class StubPredictionClient {
+        +predict(freeText, symptomEntries) PredictionResultDto
+    }
+    class AssessmentRequest {
+        +UUID patientId
+        +String freeText
+        +List~SymptomEntryDto~ symptomEntries
+        +hasAnySymptomSignal() boolean
+    }
+    class AssessmentResponse {
+        +UUID assessmentId
+        +boolean emergencyDetected
+        +PredictionResultDto result
+    }
+    class PredictionResultDto {
+        +UUID resultId
+        +Instant generatedAt
+        +String disclaimer
+        +List~DiseasePredictionDto~ predictions
+    }
+    class DiseasePredictionDto {
+        +int rank
+        +double probability
+        +String diseaseName
+        +ExplanationDto explanation
+    }
+
+    AssessmentController --> AssessmentApiService : uses
+    AssessmentController ..> AssessmentRequest : receives
+    AssessmentController ..> AssessmentResponse : returns
+    AssessmentApiService --> PredictionClient : delegates prediction
+    StubPredictionClient ..|> PredictionClient : realizes
+    PredictionClient ..> PredictionResultDto : returns
+    AssessmentResponse --> PredictionResultDto : contains
+    PredictionResultDto --> DiseasePredictionDto : contains
