@@ -1,0 +1,12 @@
+%% MDD Iteration 3 - Behavioural model: submit flow
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+flowchart TD
+    A[Patient fills free-text and/or ticks checklist] --> B{any symptom signal?}
+    B -->|no| C[submit disabled / validation message]
+    B -->|yes| D[useAssessment.submit builds AssessmentRequest]
+    D --> E[AssessmentApiClient.submitAssessment -> POST /api/assessments]
+    E -->|200| F{emergencyDetected?}
+    E -->|400| G[show validation error]
+    E -->|network/5xx| H[show retryable error]
+    F -->|true| I[EmergencyBanner: call 112, de-emphasise predictions]
+    F -->|false| J[PredictionResultView: ranked list + probabilities + explanation + disclaimer]

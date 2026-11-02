@@ -1,0 +1,22 @@
+%% MDD Iteration 2 - Behavioural model: assessment submission across the SOA boundary
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+sequenceDiagram
+    actor Patient
+    participant C as AssessmentController<br/>(Java backend)
+    participant S as AssessmentApiService
+    participant PC as PredictionClient<br/>(interface)
+    participant Py as Prediction Service<br/>(Python, POST /predict)
+
+    Patient->>C: POST /api/assessments<br/>(AssessmentRequest)
+    alt empty payload (no free text, no entries)
+        C-->>Patient: 400 Bad Request
+    else valid payload
+        C->>S: runAssessment(request)
+        S->>S: detectEmergency(request)
+        S->>PC: predict(freeText, symptomEntries)
+        PC->>Py: HTTP POST /predict
+        Py-->>PC: PredictionResultDto
+        PC-->>S: PredictionResultDto
+        S-->>C: AssessmentResponse<br/>(emergencyDetected, result)
+        C-->>Patient: 200 OK (AssessmentResponse)
+    end

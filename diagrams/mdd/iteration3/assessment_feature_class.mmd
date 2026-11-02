@@ -1,0 +1,55 @@
+%% MDD Iteration 3 - Structural model: Patient Web App symptom-prediction feature
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+classDiagram
+    class AssessmentPage {
+        +render()
+    }
+    class SymptomFreeTextInput {
+        +value
+        +onChange(text)
+    }
+    class SymptomChecklist {
+        +options SymptomOption[]
+        +selected Set
+        +onToggle(symptom)
+    }
+    class PredictionResultView {
+        +result PredictionResult
+    }
+    class EmergencyBanner {
+        +visible bool
+    }
+    class useAssessment {
+        <<hook / application layer>>
+        +submit(request) void
+        +status idle|loading|success|error
+        +data AssessmentResponse
+        +error
+    }
+    class AssessmentApiClient {
+        <<interface>>
+        +submitAssessment(AssessmentRequest) Promise~AssessmentResponse~
+    }
+    class HttpAssessmentApiClient {
+        +submitAssessment(AssessmentRequest) Promise~AssessmentResponse~
+    }
+    class AssessmentRequest {
+        +patientId
+        +freeText
+        +symptomEntries SymptomEntry[]
+    }
+    class AssessmentResponse {
+        +assessmentId
+        +emergencyDetected
+        +result PredictionResult
+    }
+
+    AssessmentPage --> SymptomFreeTextInput : composes
+    AssessmentPage --> SymptomChecklist : composes
+    AssessmentPage --> PredictionResultView : composes
+    AssessmentPage --> EmergencyBanner : composes
+    AssessmentPage --> useAssessment : uses
+    useAssessment --> AssessmentApiClient : depends on
+    HttpAssessmentApiClient ..|> AssessmentApiClient : realizes
+    useAssessment ..> AssessmentRequest : builds
+    AssessmentApiClient ..> AssessmentResponse : returns

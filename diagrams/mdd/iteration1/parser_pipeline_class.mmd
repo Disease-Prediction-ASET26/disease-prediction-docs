@@ -1,0 +1,41 @@
+%% MDD Iteration 1 - Structural model: free-text symptom parsing pipeline (Strategy)
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+classDiagram
+    class SymptomParser {
+        +parse(text) ParseResult
+    }
+    class EntityExtractor {
+        <<interface>>
+        +extract(text) ExtractedEntity[]
+    }
+    class NegationDetector {
+        <<interface>>
+        +annotate(text, entities) ExtractedEntity[]
+    }
+    class EntityLinker {
+        <<interface>>
+        +link(entities) LinkedSymptom[]
+    }
+    class ParseResult {
+        +raw_text
+        +feature_vector int[]
+        +binary_vector() int[]
+        +to_symptom_entries() SymptomEntryDTO[]
+    }
+    class ExtractedEntity {
+        +text
+        +is_negated bool
+    }
+    class LinkedSymptom {
+        +canonical_symptom
+        +similarity
+        +severity_weight int
+    }
+
+    SymptomParser --> EntityExtractor : uses
+    SymptomParser --> NegationDetector : uses
+    SymptomParser --> EntityLinker : uses
+    SymptomParser --> ParseResult : produces
+    EntityExtractor ..> ExtractedEntity : creates
+    EntityLinker ..> LinkedSymptom : creates
+    ParseResult ..> SymptomEntryDTO : maps to
