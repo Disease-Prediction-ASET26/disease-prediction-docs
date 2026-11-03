@@ -31,7 +31,7 @@ Each iteration below executes the same six steps:
 ## Iteration 0 — Baseline (not counted)
 
 Lab02–Lab04 produced the baseline model: the shared class diagram
-(`docs/diagrams/class_diagram_daria.png`, `patterns_class_diagram_ai.png`), the C4 diagrams, and
+([class diagram](../design/diagrams/uml/class_diagram_daria.png), [AI pattern diagram](../design/diagrams/patterns/patterns_class_diagram_ai.png)), the C4 diagrams, and
 the declaration-only domain + design-pattern skeletons (Strategy + Factory in the Python service).
 We treat this as Iteration 0: a model-first foundation, but not framed with explicit MDD steps.
 The two iterations below build on it.
@@ -46,7 +46,7 @@ severity-weighted feature vector + `SymptomEntryDTO` list).
 - Slice: free text → structured, mapped symptoms.
 - Anchored to: FR-P1 ("describe symptoms via free text or a structured checklist") and the agreed
   behaviour "Free-text symptoms are mapped to known Symptoms; unmapped text is kept and shown to
-  the doctor." (see `docs/requirments.md`).
+  the doctor." (see `../requirments.md`).
 
 ### Step 2 — Architecture / platform envisioning (SOA)
 
@@ -196,7 +196,7 @@ service, which consumes the parser's output. The backend web layer was net-new t
   receives a prediction result.
 - Anchored to: UC1 (Patient Triage and Direct Specialist Routing), FR-P1 (describe symptoms via
   free text / checklist) and FR-P2 (list of likely diseases with a calibrated probability score).
-  See `docs/requirments.md`.
+  See `../requirments.md`.
 
 ### Step 2 — Architecture / platform envisioning (SOA)
 
@@ -218,7 +218,7 @@ API contract modelling how an assessment is submitted or how the backend reaches
 service.
 
 Model evolution this iteration: introduce the Assessment API contract and the controller/client
-structure that realises it. (Rendered diagrams: `docs/mdd/iteration2/` in this docs repo.)
+structure that realises it. (Rendered diagrams: `mdd/iteration2/` in this repository.)
 
 API contract (the platform-independent model) — `POST /api/assessments`:
 
@@ -476,8 +476,8 @@ boundary without rewriting that code.
 - **Step 2 — ✅ same.** Web layer delegates prediction across the SOA boundary via `PredictionClient`
   (port); `StubPredictionClient` is the current adapter; `HttpPredictionClient` is the Step 6 follow-up.
 - **Step 3 — ✅ same.** API contract + controller → service → client structure modelled and rendered
-  (`docs/mdd/iteration2/` in this docs repo: `assessment_api_class`, `assessment_api_sequence`,
-  `baseline_vs_refined`, as `.mmd` + `.png`).
+  (`mdd/iteration2/` in this repository: `assessment_api_class`, `assessment_api_sequence`,
+  `baseline_vs_refined`, with Mermaid embedded in the iteration README and editable `.mmd` sources).
 - **Step 4 — ⬆️ better.** Every model element maps to Java under
   `src/main/java/com/diseaseprediction/`: `@RestController AssessmentController`; request/response and
   result DTOs as **records** in `controller/dto/`; `@Service AssessmentApiService.runAssessment()`;

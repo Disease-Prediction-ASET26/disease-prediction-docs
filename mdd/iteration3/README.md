@@ -12,9 +12,8 @@ Patient Web App, submits, and sees the ranked predictions — or an emergency al
   Iteration 2). It never calls the Python prediction service directly.
 - **Scope:** a single page, no client-side routing (routing is Iteration 4).
 
-> Render the `.mmd` files with the VS Code *Markdown Preview Mermaid* extension, IntelliJ's
-> Mermaid plugin, or <https://mermaid.live>. The `.png` files next to them were rendered with
-> `@mermaid-js/mermaid-cli`. GitHub renders the fenced `mermaid` blocks below automatically.
+> The diagrams are embedded below and rendered by GitHub. The `.mmd` files keep their editable
+> source.
 
 ---
 
@@ -37,8 +36,6 @@ Source of truth: `disease-prediction-be/src/main/java/com/diseaseprediction/cont
 | `AssessmentRequest.hasAnySymptomSignal()` | `hasAnySymptomSignal()` |
 
 ### Structural model (`assessment_feature_class.mmd`)
-
-![Structural model](assessment_feature_class.png)
 
 ```mermaid
 classDiagram
@@ -107,8 +104,6 @@ classDiagram
 
 ### Behavioural model (`assessment_feature_flow.mmd`)
 
-![Submit flow](assessment_feature_flow.png)
-
 ```mermaid
 flowchart TD
     A[Patient fills free text and/or ticks checklist] --> B{any symptom signal?}
@@ -123,8 +118,6 @@ flowchart TD
 ```
 
 ### Baseline vs refined (`baseline_vs_refined.mmd`)
-
-![Baseline vs refined](baseline_vs_refined.png)
 
 **What changed and why:** the baseline repo held only CI and pre-commit config; the C4
 container "Patient Web App (React)" was named but unrealised. Iteration 3 adds the component
@@ -205,7 +198,7 @@ proxy, ranked prediction and disclaimer rendered (the backend still returns its
    (or a backend CORS config) is expected. Carry-forward: add a `CorsConfigurationSource` to the
    backend, or front both containers with one ingress.
 2. **Java/Spring vs FastAPI divergence confirmed.** The C4 container model in
-   `requirments.md` §7.2 labels the API Backend "Python/FastAPI"; the implemented backend is
+   `../../requirments.md` §7.2 labels the API Backend "Python/FastAPI"; the implemented backend is
    **Java / Spring Boot**. The frontend targets the implemented contract. The C4 label should be
    updated to "Java / Spring Boot" in `disease-prediction-docs` (not changed here).
 3. **Per-symptom severity works for the MVP.** One `SeveritySelect` per *checked* item keeps the
