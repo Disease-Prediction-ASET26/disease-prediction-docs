@@ -1,0 +1,25 @@
+%% MDD Iteration 3 - Baseline vs refined
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+flowchart TB
+    subgraph BEFORE["Baseline (main)"]
+        direction TB
+        B1["CI workflow (jobs disabled)<br/>+ pre-commit config"]
+        B2["C4 container 'Patient Web App (React)'<br/>declared, not realised"]:::missing
+        B3["(no application code)"]:::missing
+    end
+
+    subgraph AFTER["Refined (Iteration 3)"]
+        direction TB
+        A1["View: AssessmentPage<br/>SymptomFreeTextInput, SymptomChecklist + SeveritySelect,<br/>PredictionResultView, EmergencyBanner"]
+        A2["Application: useAssessment<br/>(status machine, hasAnySymptomSignal)"]
+        A3["API: AssessmentApiClient (port)<br/>+ HttpAssessmentApiClient (fetch adapter)"]
+        A4["Domain: TS mirrors of backend DTOs<br/>+ curated symptom vocabulary"]
+        A5["Tooling: Vite, Vitest + RTL + MSW, ESLint/Prettier"]
+        A1 --> A2 --> A3
+        A1 -.uses.-> A4
+        A3 -.uses.-> A4
+    end
+
+    BEFORE ==>|"realise the container,<br/>derive types from the API contract"| AFTER
+
+    classDef missing stroke-dasharray: 5 5,color:#999,stroke:#999;
