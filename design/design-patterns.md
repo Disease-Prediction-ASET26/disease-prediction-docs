@@ -119,13 +119,13 @@ that makes the design cleaner, not a label bolted on.
 **Backend (Java) — the six patterns:** Builder, Composite, Facade, Observer,
 Chain of Responsibility, and Template Method, with the domain classes they touch.
 
-![Backend patterns class diagram](diagrams/patterns_class_diagram_be.png)
+![Backend patterns class diagram](diagrams/patterns/patterns_class_diagram_be.png)
 
 **ML prediction service (Python) — Strategy + Factory Method:** each
 `ModelFactory` subclass *creates* one `ClassifierStrategy`; `DiseaseClassifier`
 (the Context) *holds* a strategy and *delegates* `predict()` to its `classify()`.
 
-![AI patterns class diagram](diagrams/patterns_class_diagram_ai.png)
+![AI patterns class diagram](diagrams/patterns/patterns_class_diagram_ai.png)
 
 ---
 
@@ -180,7 +180,7 @@ and a teammate's Observer PR was reviewed against the pattern's required roles).
 **Prompt — which patterns fit the project:**
 
 > "On the theme of our Disease Prediction App (requirements and class diagram in
-> `docs/`), suggest design patterns that fit the domain for Lab04. Each of the 4
+> `design/`), suggest design patterns that fit the domain for Lab04. Each of the 4
 > team members must implement at least 2 patterns. The backend is Java/Spring
 > Boot and the ML part is Python. For each pattern tell me the GoF type, which
 > domain classes it touches, and *why* it fits — patterns must solve a real need,

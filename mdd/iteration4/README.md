@@ -12,8 +12,8 @@ deep links work.
 - **Contract:** unchanged. Routing is client-side only; no new network calls.
 - **Library:** `react-router-dom` v7 (`createBrowserRouter` / `RouterProvider`).
 
-> `.mmd` sources render in GitHub, IntelliJ, VS Code or <https://mermaid.live>; the `.png` files
-> were rendered with `@mermaid-js/mermaid-cli`.
+> The diagrams are embedded below and rendered by GitHub. The `.mmd` files keep their editable
+> source.
 
 ---
 
@@ -31,11 +31,59 @@ deep links work.
 
 ### Structural model (`routing_class.mmd`)
 
-![Routing layer](routing_class.png)
+```mermaid
+classDiagram
+    class AppRouter {
+        <<router config>>
+        +appRoutes RouteObject[]
+        +createAppRouter() createBrowserRouter
+    }
+    class RootLayout {
+        +header / nav aria-label=Main
+        +Outlet
+        +focus h1 on navigate
+    }
+    class HomePage
+    class AssessmentRoute {
+        +handleComplete(response) navigate
+    }
+    class ResultRoute {
+        +assessment (from location.state)
+    }
+    class EmergencyRoute {
+        +assessment (from location.state)
+    }
+    class NotFoundPage
+    class AssessmentLocationState {
+        +assessment AssessmentResponse
+    }
+    class AssessmentPage {
+        <<Iteration 3 — reused>>
+        +onAssessmentComplete(response)
+    }
+    class PredictionResultView {
+        <<Iteration 3 — reused>>
+    }
+    class EmergencyBanner {
+        <<Iteration 3 — reused>>
+    }
+
+    AppRouter --> RootLayout : mounts
+    RootLayout --> HomePage : outlet /
+    RootLayout --> AssessmentRoute : outlet /assessment
+    RootLayout --> ResultRoute : outlet /assessment/result
+    RootLayout --> EmergencyRoute : outlet /assessment/emergency
+    RootLayout --> NotFoundPage : outlet *
+    AssessmentRoute --> AssessmentPage : renders
+    AssessmentRoute ..> ResultRoute : navigate on 200
+    AssessmentRoute ..> EmergencyRoute : navigate on emergency
+    AssessmentRoute ..> AssessmentLocationState : carries
+    ResultRoute --> PredictionResultView : renders
+    EmergencyRoute --> EmergencyBanner : renders
+    ResultRoute ..> EmergencyRoute : redirect if emergency
+```
 
 ### Behavioural model (`routing_flow.mmd`)
-
-![Navigation flow](routing_flow.png)
 
 ```mermaid
 flowchart TD
@@ -54,7 +102,29 @@ flowchart TD
 
 ### Baseline vs refined (`baseline_vs_refined.mmd`)
 
-![Baseline vs refined](baseline_vs_refined.png)
+```mermaid
+flowchart TB
+    subgraph BEFORE["Baseline (Iteration 3)"]
+        direction TB
+        B1["App renders AssessmentPage directly"]
+        B2["result + emergency shown inline on the page"]
+        B3["(no URLs, no back/forward, no deep links)"]:::missing
+    end
+
+    subgraph AFTER["Refined (Iteration 4)"]
+        direction TB
+        A1["App → RouterProvider(createBrowserRouter)"]
+        A2["RootLayout: header, nav, Outlet, focus management"]
+        A3["Routes: /, /assessment, /assessment/result,<br/>/assessment/emergency, *"]
+        A4["AssessmentLocationState in router state<br/>+ no-state guards → /assessment"]
+        A1 --> A2 --> A3
+        A3 -.carries.-> A4
+    end
+
+    BEFORE ==>|"add a routing layer above the<br/>unchanged Iteration 3 components"| AFTER
+
+    classDef missing stroke-dasharray: 5 5,color:#999,stroke:#999;
+```
 
 **What changed and why:** Iteration 3 rendered one page with no URL semantics. Iteration 4 adds a
 router, a shared layout and thin route components, because the app now needs addressable views,
