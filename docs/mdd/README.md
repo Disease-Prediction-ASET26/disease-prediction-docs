@@ -9,8 +9,8 @@ source; each `.png` is the rendered image (2× scale). See `MDD_ITERATIONS.md` a
 | --- | --- | --- |
 | 1 — Free-text symptom parsing (Python) | `iteration1/` | `parser_pipeline_class`, `parser_pipeline_flow` |
 | 2 — Assessment API (Java backend) | `iteration2/` | `assessment_api_class`, `assessment_api_sequence`, `baseline_vs_refined` |
-| 3 — Patient Web App: prediction feature (React) | `iteration3/` | `assessment_feature_class`, `assessment_feature_flow` |
-| 4 — Patient Web App: client-side routing (React) | `iteration4/` | `routing_class`, `routing_flow` |
+| 3 — Patient Web App: prediction feature (React) | `iteration3/` | `assessment_feature_class`, `assessment_feature_flow`, `baseline_vs_refined` |
+| 4 — Patient Web App: client-side routing (React) | `iteration4/` | `routing_class`, `routing_flow`, `baseline_vs_refined` |
 
 To re-render a `.mmd` to `.png`: open it in the VS Code *Markdown Preview Mermaid* / IntelliJ
 Mermaid plugin, or paste into <https://mermaid.live> and export.

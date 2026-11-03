@@ -1,17 +1,24 @@
-%% MDD Iteration 3 - Structural model: Patient Web App symptom-prediction feature
+%% MDD Iteration 3 - Structural model: Patient Web App prediction feature
 %% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
 classDiagram
     class AssessmentPage {
+        -freeText string
+        -symptomEntries SymptomEntry[]
+        +onAssessmentComplete?(AssessmentResponse)
         +render()
     }
     class SymptomFreeTextInput {
-        +value
+        +value string
         +onChange(text)
     }
     class SymptomChecklist {
         +options SymptomOption[]
-        +selected Set
-        +onToggle(symptom)
+        +value SymptomEntry[]
+        +onChange(entries)
+    }
+    class SeveritySelect {
+        +value Severity
+        +onChange(severity)
     }
     class PredictionResultView {
         +result PredictionResult
@@ -21,31 +28,33 @@ classDiagram
     }
     class useAssessment {
         <<hook / application layer>>
-        +submit(request) void
+        +submit(AssessmentInput) Promise~AssessmentResponse~
         +status idle|loading|success|error
         +data AssessmentResponse
-        +error
+        +error ValidationError|NetworkError
     }
     class AssessmentApiClient {
         <<interface>>
         +submitAssessment(AssessmentRequest) Promise~AssessmentResponse~
     }
     class HttpAssessmentApiClient {
+        -baseUrl VITE_API_BASE_URL
         +submitAssessment(AssessmentRequest) Promise~AssessmentResponse~
     }
     class AssessmentRequest {
-        +patientId
-        +freeText
+        +patientId string|null
+        +freeText string
         +symptomEntries SymptomEntry[]
     }
     class AssessmentResponse {
         +assessmentId
-        +emergencyDetected
+        +emergencyDetected bool
         +result PredictionResult
     }
 
     AssessmentPage --> SymptomFreeTextInput : composes
     AssessmentPage --> SymptomChecklist : composes
+    SymptomChecklist --> SeveritySelect : per checked item
     AssessmentPage --> PredictionResultView : composes
     AssessmentPage --> EmergencyBanner : composes
     AssessmentPage --> useAssessment : uses

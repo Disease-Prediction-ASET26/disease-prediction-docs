@@ -3,23 +3,31 @@
 classDiagram
     class AppRouter {
         <<router config>>
-        +routes
+        +appRoutes RouteObject[]
+        +createAppRouter() createBrowserRouter
     }
     class RootLayout {
-        +header/nav
+        +header / nav aria-label=Main
         +Outlet
+        +focus h1 on navigate
     }
     class HomePage
     class AssessmentRoute {
-        +onSubmitted(result) navigate
+        +handleComplete(response) navigate
     }
     class ResultRoute {
-        +result (from router state)
+        +assessment (from location.state)
     }
-    class EmergencyRoute
+    class EmergencyRoute {
+        +assessment (from location.state)
+    }
     class NotFoundPage
+    class AssessmentLocationState {
+        +assessment AssessmentResponse
+    }
     class AssessmentPage {
         <<Iteration 3 — reused>>
+        +onAssessmentComplete(response)
     }
     class PredictionResultView {
         <<Iteration 3 — reused>>
@@ -29,13 +37,15 @@ classDiagram
     }
 
     AppRouter --> RootLayout : mounts
-    RootLayout --> HomePage : outlet
-    RootLayout --> AssessmentRoute : outlet
-    RootLayout --> ResultRoute : outlet
-    RootLayout --> EmergencyRoute : outlet
-    RootLayout --> NotFoundPage : outlet
+    RootLayout --> HomePage : outlet /
+    RootLayout --> AssessmentRoute : outlet /assessment
+    RootLayout --> ResultRoute : outlet /assessment/result
+    RootLayout --> EmergencyRoute : outlet /assessment/emergency
+    RootLayout --> NotFoundPage : outlet *
     AssessmentRoute --> AssessmentPage : renders
     AssessmentRoute ..> ResultRoute : navigate on 200
     AssessmentRoute ..> EmergencyRoute : navigate on emergency
+    AssessmentRoute ..> AssessmentLocationState : carries
     ResultRoute --> PredictionResultView : renders
     EmergencyRoute --> EmergencyBanner : renders
+    ResultRoute ..> EmergencyRoute : redirect if emergency
