@@ -1,0 +1,38 @@
+%% MDD Iteration 5 - Data model (ER) for users and consent.
+%% JOINED inheritance: one shared users table + one table per user type.
+%% Created by Flyway V1; V2 turns the personal-data columns into encrypted text.
+%% Hibernate only validates the schema (ddl-auto=validate).
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+erDiagram
+    users ||--o| patients : "is a"
+    users ||--o| doctors : "is a"
+    users ||--o| administrators : "is a"
+    patients ||--o{ consents : "records"
+
+    users {
+        uuid id PK
+        varchar identity_id UK "Keycloak user id (token sub)"
+        varchar email "NOT NULL"
+        varchar full_name "NOT NULL, encrypted AES-256-GCM (V2)"
+        varchar role "PATIENT | DOCTOR | ADMIN, discriminator"
+        timestamptz created_at "NOT NULL"
+    }
+    patients {
+        uuid user_id PK, FK "-> users.id ON DELETE CASCADE"
+        varchar date_of_birth "encrypted AES-256-GCM (V2)"
+    }
+    doctors {
+        uuid user_id PK, FK "-> users.id ON DELETE CASCADE"
+        varchar specialty "NOT NULL"
+        varchar license_number UK "NOT NULL"
+        boolean is_verified "NOT NULL DEFAULT false"
+    }
+    administrators {
+        uuid user_id PK, FK "-> users.id ON DELETE CASCADE"
+    }
+    consents {
+        uuid id PK
+        uuid patient_id FK "-> patients.user_id ON DELETE CASCADE"
+        boolean granted "NOT NULL, true = grant, false = revoke"
+        timestamptz recorded_at "NOT NULL"
+    }

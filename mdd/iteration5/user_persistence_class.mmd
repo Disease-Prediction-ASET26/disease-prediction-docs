@@ -1,0 +1,89 @@
+%% MDD Iteration 5 - Structural model: JPA entities (JOINED inheritance), repositories and
+%% field-level encryption of personal data.
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+classDiagram
+    class User {
+        <<abstract, @Entity, @Inheritance JOINED>>
+        -UUID id
+        -String identityId
+        -String email
+        -String fullName
+        -UserRole role
+        -OffsetDateTime createdAt
+    }
+    note for User "role is the discriminator column:<br>set by the subclass, read-only in code"
+    class Patient {
+        <<@Entity, @DiscriminatorValue PATIENT>>
+        -LocalDate dateOfBirth
+        -List~Consent~ consents
+        +giveConsent() Consent
+        +revokeConsent() Consent
+        +hasActiveConsent() boolean
+    }
+    class Doctor {
+        <<@Entity, @DiscriminatorValue DOCTOR>>
+        -String specialty
+        -String licenseNumber
+        -boolean verified
+        ~markVerified()
+    }
+    class Administrator {
+        <<@Entity, @DiscriminatorValue ADMIN>>
+        +verifyDoctor(Doctor)
+    }
+    class Consent {
+        <<@Entity>>
+        -UUID id
+        -boolean granted
+        -OffsetDateTime recordedAt
+    }
+    note for Consent "Append-only history:<br>the latest row is the current state"
+    class UserRole {
+        <<enumeration>>
+        PATIENT
+        DOCTOR
+        ADMIN
+    }
+    class UserRepository {
+        <<interface, extends JpaRepository>>
+        +findByIdentityId(String) Optional~User~
+    }
+    class PatientRepository {
+        <<interface, extends JpaRepository>>
+    }
+    class DoctorRepository {
+        <<interface, extends JpaRepository>>
+        +findByLicenseNumber(String) Optional~Doctor~
+    }
+    class ConsentRepository {
+        <<interface, extends JpaRepository>>
+        +findFirstByPatientOrderByRecordedAtDesc(Patient) Optional~Consent~
+    }
+    class FieldEncryptor {
+        <<security, @Component>>
+        -SecretKey key
+        +encrypt(String) String
+        +decrypt(String) String
+    }
+    note for FieldEncryptor "AES-256-GCM, random IV per value.<br>Stored as v1: + Base64. Key from DATA_ENCRYPTION_KEY"
+    class EncryptedStringConverter {
+        <<persistence, @Converter>>
+    }
+    class EncryptedLocalDateConverter {
+        <<persistence, @Converter>>
+    }
+
+    Patient --|> User
+    Doctor --|> User
+    Administrator --|> User
+    User --> UserRole : role
+    Patient "1" *-- "0..*" Consent : consents
+    Administrator ..> Doctor : verifies
+    UserRepository ..> User : persists
+    PatientRepository ..> Patient : persists
+    DoctorRepository ..> Doctor : persists
+    ConsentRepository ..> Consent : persists
+    User ..> EncryptedStringConverter : fullName
+    Patient ..> EncryptedLocalDateConverter : dateOfBirth
+    EncryptedStringConverter --> FieldEncryptor : uses
+    EncryptedLocalDateConverter --> FieldEncryptor : uses
