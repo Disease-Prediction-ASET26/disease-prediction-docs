@@ -377,6 +377,46 @@ The full six-step plan — route model, the router/layout structure derived from
 model-to-code map, and routing-specific tests (navigation, deep-linking, guards) — is in
 **`MDD_ITERATIONS_FE_PLAN.md`, Part 2**.
 
+## Iteration 5 — User and Consent Persistence (Java backend)
+
+Status: **implemented** (branch `feat/user-persistence`, PR into `develop`; 21 tests pass). First
+step of the "secured before stored" plan: users and consent are persisted before any health data,
+so that assessments (Iteration 7) land in a schema that already has identity, consent, cascade
+deletion and encrypted personal data.
+
+### Step 1 — Requirements envisioning
+
+- Slice: persist patients, doctors, administrators and the patient's consent history.
+- Anchored to: NFR-1 (GDPR Article 9, health data is a special category), FR-G1 (grant and revoke
+  consent), FR-G2 / UC3 (delete the account and all data), UC1 step 1 (consent before symptom
+  input).
+
+### Step 2 — Architecture / platform envisioning
+
+- **Where:** the API Backend (Java / Spring Boot), new persistence layer. The Python prediction
+  service is not involved.
+- **Platform:** PostgreSQL 18, run locally with Docker Compose (`compose.yaml`, port 5433);
+  Spring Data JPA; Flyway for versioned migrations.
+- **Schema ownership:** Flyway migrations are the source of truth for the schema. Hibernate runs
+  with `ddl-auto=validate`, so it checks the entities against the tables but never changes them.
+  Letting Hibernate generate the schema was rejected because it is not versioned or reviewable.
+- **Relational, not MongoDB:** an assessment would fit a document store, but the wider domain is
+  relational (users, doctors, reports, consent), and the GDPR requirements need foreign keys with
+  cascade deletes and auditable history. MongoDB also has no Flyway equivalent of the same maturity.
+- **Identity:** login and passwords are delegated to Keycloak in Iteration 6. This iteration only
+  adds the `identity_id` column that links a user row to the Keycloak account.
+- **Domain classes are the JPA entities:** a separate persistence model with mappers (hexagonal
+  style) was considered and rejected, because it doubles the classes for little benefit at this
+  size and weakens the one-to-one model-to-code traceability.
+- **Encryption:** personal data (`full_name`, `date_of_birth`) is encrypted by the application
+  with AES-256-GCM (field-level encryption). Disk-level encryption at rest and TLS to the database
+  need a deployed database, so they belong to the deployment work with the GitOps and infra
+  owners.
+
+The model (ER, class and baseline-vs-refined diagrams), the reasons for each change, the
+model-to-code mapping, the test results and the review (Steps 3–6) are in
+**`iteration5/README.md`**.
+
 ## Coordinator & team notes
 
 - Coordinator: `<fill in name>` — tracks who did what and negotiates per-member points (Lab05
@@ -386,6 +426,7 @@ model-to-code map, and routing-specific tests (navigation, deep-linking, guards)
   - Iteration 2 — Assessment API (Java backend) — `<owner>`
   - Iteration 3 — Patient Web App: prediction feature (React frontend) — `<owner>` (planned; see `MDD_ITERATIONS_FE_PLAN.md`, Part 1)
   - Iteration 4 — Patient Web App: client-side routing (React Router) — `<owner>` (planned; see `MDD_ITERATIONS_FE_PLAN.md`, Part 2)
+  - Iteration 5 — User and consent persistence (Java backend) — `<owner>` (implemented; see `iteration5/README.md`)
 - Repository / process (Lab05 Theme 2 — GitHub): GitFlow branching (main ← develop ← feature
   branches), CI pipeline (lint, build, secret scan, OWASP dependency scan, SonarQube gate,
   containerize), and pre-commit hooks (ruff + hygiene). Process/DevOps evidence for the GitHub

@@ -1,0 +1,45 @@
+%% MDD Iteration 5 - Before/after: baseline (in-memory user classes with passwords)
+%% vs refined (persisted with JPA JOINED inheritance, identity in Keycloak, consent as history,
+%% personal data encrypted).
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+flowchart TB
+    subgraph BEFORE["Baseline (domain skeletons, no persistence)"]
+        direction TB
+        B1["abstract User<br/>userId, email, passwordHash,<br/>fullName, role, createdAt<br/>login(), logout()"]
+        B2["Patient: dateOfBirth,<br/>consentGiven, consentDate"]
+        B3["Doctor: specialty,<br/>licenseNumber, isVerified"]
+        B4["Administrator (no fields)"]
+        B5["role field AND subclass type<br/>store the same fact twice"]:::problem
+        B6["(no database, no repositories)"]:::missing
+        B1 --> B2
+        B1 --> B3
+        B1 --> B4
+    end
+
+    subgraph AFTER["Refined (Iteration 5)"]
+        direction TB
+        A1["abstract User @Entity, JOINED<br/>id, identityId, email,<br/>fullName (encrypted), role, createdAt"]
+        A2["Patient: dateOfBirth (encrypted)<br/>+ consent history"]
+        A3["Doctor: specialty,<br/>licenseNumber, verified"]
+        A4["Administrator<br/>verifyDoctor()"]
+        A5["Consent @Entity<br/>granted, recordedAt<br/>(one row per grant / revoke)"]
+        A6["role = discriminator column<br/>derived from the subclass"]
+        A7["Flyway V1 creates the tables,<br/>V2 makes personal data encrypted text.<br/>Hibernate validates them"]
+        A8["Repositories:<br/>User, Patient, Doctor, Consent"]
+        A9["FieldEncryptor (AES-256-GCM)<br/>+ JPA converters"]
+        A1 --> A2
+        A1 --> A3
+        A1 --> A4
+        A2 --> A5
+        A1 -.-> A9
+        A2 -.-> A9
+    end
+
+    KC["Keycloak (Iteration 6)<br/>passwords, login, roles"]:::external
+
+    BEFORE ==>|"persist with JPA + Flyway,<br/>move authentication out,<br/>consent becomes auditable history,<br/>encrypt personal data"| AFTER
+    AFTER -.->|"identityId = Keycloak user id"| KC
+
+    classDef missing stroke-dasharray: 5 5,color:#999,stroke:#999;
+    classDef problem fill:#ffe0e0,stroke:#c0392b,color:#7b1e14;
+    classDef external fill:#e8e8e8,stroke:#666,color:#222;
