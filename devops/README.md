@@ -49,9 +49,13 @@ manages the other checked-in cluster manifests after bootstrap; see the
 Application workflows use the shared GitHub Actions workflows for checks and
 image publishing. Pull requests build the image for their target branch;
 `develop` builds `Dockerfile.dev` and publishes a dev image, while `main`
-builds `Dockerfile.prod` and publishes a production image. Publishing an image
-does not deploy it. The GitOps repository currently has no disease-prediction
-workload or public product route.
+builds `Dockerfile.prod` and publishes a production image. After a successful
+dev publish, backend and frontend CI open or update a GitOps pull request with
+the immutable digest. The reviewed AI model-runtime release opens the same kind
+of pull request for its image. Merge the GitOps pull request to let Argo CD
+sync the Oracle dev stack. These workflows need a GitHub App limited to the
+GitOps repository with Contents and Pull requests write access. Configure
+`GITOPS_APP_ID` and `GITOPS_APP_PRIVATE_KEY` in the application Actions secrets.
 
 ## Administration and secrets
 
@@ -91,10 +95,14 @@ flowchart LR
   traefik -->|Argo CD route| proxy[Argo CD web proxy]
   proxy --> argocd[Argo CD]
   traefik -->|Grafana route| grafana[Grafana]
+  traefik -->|ForwardAuth check| authelia[Authelia]
+  authelia -->|allow or deny| traefik
+  traefik -->|dev.pocket-doc.app after auth| frontend[Disease Prediction frontend]
+  frontend -->|/api| backend[Disease Prediction backend]
+  backend -->|POST /predict| ai[Disease Prediction AI]
+  backend -->|TLS over Tailscale| postgres[Proxmox PostgreSQL]
   argocd -. native login .-> authelia
   grafana -. native login .-> authelia
-  traefik -. future approved route .-> service[Product Service]
-  service -. optional ForwardAuth .-> authelia
 
   externalDNS[ExternalDNS] -->|proxied CNAME and TXT; upsert-only| cloudflare
 ```
@@ -103,9 +111,15 @@ Name.com is the registrar; Cloudflare hosts the Domain Name System (DNS) and
 the public edge. HTTPS ends at Cloudflare. The Tunnel connects outbound to
 Traefik, so OCI exposes no inbound web ports. Authelia, Argo CD, and Grafana
 have public hostnames. Argo CD and Grafana use native OpenID Connect (OIDC)
-with Authelia. No disease-prediction product route is published. ExternalDNS
+with Authelia. The Disease Prediction dev route is
+`dev.pocket-doc.app`, protected by Authelia ForwardAuth and its two-factor
+policy. Only the frontend has a public route; backend and AI remain internal.
+`health.pocket-doc.app` is reserved for a future production route. ExternalDNS
 creates proxied canonical name (CNAME) and TXT ownership records for approved
 routes; its upsert-only policy does not delete records.
+
+See the GitOps [Disease Prediction dev runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/disease-prediction.md)
+for Vault prerequisites, activation, route checks, and rollback.
 
 For route setup, DNS changes, and authentication choices, use the GitOps
 [domain and ingress runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/domain-ingress.md)
