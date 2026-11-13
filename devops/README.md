@@ -55,7 +55,7 @@ the immutable digest. The reviewed AI model-runtime release opens the same kind
 of pull request for its image. Merge the GitOps pull request to let Argo CD
 sync the Oracle dev stack. These workflows need a GitHub App limited to the
 GitOps repository with Contents and Pull requests write access. Configure
-`GITOPS_APP_ID` (the app Client ID) and `GITOPS_APP_PRIVATE_KEY` (the full PEM key) in the application Actions secrets.
+`GITOPS_CLIENT_ID` (the app Client ID) and `GITOPS_APP_PRIVATE_KEY` (the full PEM key) in the application Actions secrets.
 
 ## Administration and secrets
 
