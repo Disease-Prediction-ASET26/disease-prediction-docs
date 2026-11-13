@@ -1,100 +1,112 @@
 # DevOps overview
 
-This page shows where DevOps work lives and how changes and traffic move
-through the system. Use the repository guides for commands and change steps.
+Use this page to find the repository for each task and see how infrastructure,
+cluster operations, and application delivery fit together. Follow the linked
+guides for setup and change procedures.
 
-## Repository ownership
+## Repositories and guides
 
-| Repository | Owns |
-| --- | --- |
-| `disease-prediction-infra` | Terraform for OCI resources, including the VM, network, boot-volume backup, Vault and HSM key, access policy, quotas, and budget. Its README is the Terraform setup and change guide. |
-| `disease-prediction-gitops` | K3s configuration, Argo CD, Helmfile, platform manifests, and host automation. Its bootstrap and operations guides are the cluster runbooks. |
-| `disease-prediction-ci` | Shared GitHub Actions workflows and their pinned tool versions. Each application repository keeps its own pipeline file and commands. |
-| Application repositories | Application source and service-specific setup. The CI workflows use the shared workflows where needed. |
-| `disease-prediction-docs` | Cross-repository overviews, diagrams, and project model artifacts. |
+| Repository | Owns | Start here |
+| --- | --- | --- |
+| `disease-prediction-infra` | Oracle Cloud Infrastructure (OCI) resources managed with Terraform. | [Terraform setup and change guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-infra/blob/main/README.md) |
+| `disease-prediction-gitops` | Oracle and Proxmox Kubernetes configuration, Argo CD, Helmfile, and host automation. | [Oracle bootstrap guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/bootstrap.md) and [operations index](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/README.md) |
+| `disease-prediction-ci` | Shared GitHub Actions workflows and their pinned tool versions. | [Shared workflow guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-ci/blob/main/README.md) and [tool versions](https://github.com/Disease-Prediction-ASET26/disease-prediction-ci/blob/main/TOOL-VERSIONS.md) |
+| `disease-prediction-ai` | AI service code and service setup. | [AI README](https://github.com/Disease-Prediction-ASET26/disease-prediction-ai/blob/main/README.md) and [application workflow](https://github.com/Disease-Prediction-ASET26/disease-prediction-ai/blob/main/.github/workflows/ci.yml) |
+| `disease-prediction-be` | Backend service and its application programming interface (API). | [Backend README](https://github.com/Disease-Prediction-ASET26/disease-prediction-be/blob/main/README.md) and [application workflow](https://github.com/Disease-Prediction-ASET26/disease-prediction-be/blob/main/.github/workflows/ci.yml) |
+| `disease-prediction-fe` | Frontend code and service setup. | [Frontend README](https://github.com/Disease-Prediction-ASET26/disease-prediction-fe/blob/main/README.md) and [application workflow](https://github.com/Disease-Prediction-ASET26/disease-prediction-fe/blob/main/.github/workflows/ci.yml) |
+| `disease-prediction-docker` | Compose profiles for running the application repositories together. | [Docker and Compose guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-docker/blob/main/README.md) |
+| `disease-prediction-docs` | Cross-repository overviews, diagrams, and project models. | [Documentation index](../README.md) |
 
-## Provision and deploy
+## Provisioning and delivery
 
 ```mermaid
 flowchart LR
-  operator[Operator] -->|reviewed changes| infraRepo[Infrastructure repository]
+  operator[Operator] -->|reviewed Terraform changes| infraRepo[Infrastructure repository]
   infraRepo --> terraform[Terraform CLI]
   terraform -->|OCI API| oci[OCI resources]
-  terraform <-->|remote state| state[(Private Object Storage bucket)]
-  oci --> vm[Oracle VM and K3s]
+  terraform <-->|remote state| state[(Private versioned state bucket)]
+  oci --> vm[Oracle virtual machine running K3s]
 
-  operator -->|reviewed changes| gitRepo[GitOps repository]
-  gitRepo -->|Helmfile installs| argocd[Argo CD]
+  operator -->|reviewed Git changes| gitRepo[GitOps repository]
+  gitRepo -->|Helmfile bootstrap| argocd[Argo CD]
   argocd -->|syncs checked-in manifests| k3s[K3s cluster]
   gitRepo -->|host manifests and Ansible| host[VM host configuration]
+  host --> vm
 
-  appRepo[Application repositories] -->|application workflows| sharedCI[Shared CI workflows]
-  sharedCI -->|checks| result[Workflow results]
-  sharedCI -. image build when enabled .-> registry[Private GHCR]
+  appRepos[Application repositories] -->|application workflows| sharedCI[Shared GitHub Actions workflows]
+  sharedCI -->|check results| results[Workflow results]
+  sharedCI -. branch-selected image build .-> registry[Private container registry]
 ```
 
-The private, versioned remote state bucket is created separately from the
-project Terraform stack. Argo CD reads the GitOps repository and syncs its checked-in cluster
-configuration. The shared container workflow can build and publish images when
-an application sets `CONTAINER_ENABLED` to `true` and provides a Dockerfile. It
-does not mean an application is deployed. The GitOps repository currently has
-no public product workload route.
+The private, versioned Object Storage bucket for Terraform state is created
+separately from the project stack. The [infrastructure guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-infra/blob/main/README.md)
+covers its setup and the Terraform plan and apply steps. For Oracle, K3s applies
+the checked-in host manifests for the Gateway API and Traefik custom resource
+definitions (CRDs). Argo CD
+manages the other checked-in cluster manifests after bootstrap; see the
+[Oracle bootstrap guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/bootstrap.md).
 
-K3s applies its host manifests for the Gateway API and Traefik CRDs. Argo CD
-manages the rest of the checked-in cluster configuration. See the GitOps
-[bootstrap guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/bootstrap.md)
-for the procedure.
+Application workflows use the shared GitHub Actions workflows for checks and
+image publishing. Pull requests build the image for their target branch;
+`develop` builds `Dockerfile.dev` and publishes a dev image, while `main`
+builds `Dockerfile.prod` and publishes a production image. Publishing an image
+does not deploy it. The GitOps repository currently has no disease-prediction
+workload or public product route.
 
 ## Administration and secrets
 
 ```mermaid
 flowchart LR
-  admin[Admin workstation] -->|Tailscale SSH and Kubernetes API| vm[Oracle VM]
-  vm --> k3s[K3s]
+  admin[Admin workstation] -->|Tailscale SSH| vm[Oracle VM]
+  admin -->|Tailscale Kubernetes API| k3s[K3s]
+  vm --> k3s
   k3s --> eso[External Secrets Operator]
-  eso -->|VM Instance Principal| vault[OCI Vault]
+  eso -->|Instance Principal| vault[OCI Vault]
   eso -->|sync selected values| secrets[Kubernetes Secrets]
   secrets --> workloads[Workloads]
+  k3s -. encrypts Secrets at rest .-> secrets
 ```
 
-K3s encrypts Kubernetes Secrets at rest. The OCI Instance Principal is a VM-level
-identity, not a pod identity. A pod that can reach the OCI metadata endpoint
-may be able to use the VM's Vault permissions. Check this trust boundary before
-you run an untrusted workload. See the GitOps [secrets runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/secrets.md)
-and [private access runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/tailscale.md).
-
 The OCI security list allows no inbound SSH, Kubernetes API, HTTP, or HTTPS
-traffic. Use Tailscale for administration.
+traffic. Use Tailscale for administration. See the GitOps [private access
+runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/tailscale.md).
+
+External Secrets Operator (ESO) reads selected values from OCI Vault and
+creates Kubernetes Secrets. K3s encrypts those Secrets at rest. The OCI
+Instance Principal belongs to the Oracle virtual machine (VM), not to an ESO
+pod, and its policy can read every secret in the Vault. A pod that can reach
+the OCI metadata endpoint may be able to use that permission. Run only trusted
+workloads until metadata access is restricted. See the GitOps [secrets
+runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/secrets.md).
 
 ## Public traffic
 
 ```mermaid
 flowchart LR
-  browser[Browser] -->|HTTPS; TLS ends at Cloudflare| cloudflare[Cloudflare DNS and edge]
-  cloudflare -->|Tunnel| tunnel[cloudflared]
-  tunnel -->|HTTP inside cluster| traefik[Traefik Gateway]
-  traefik --> route[Approved HTTPRoute]
-  route -->|login portal| authelia[Authelia]
-  route -->|native OIDC route| proxy[Argo CD web proxy]
+  browser[Browser] -->|HTTPS| cloudflare[Cloudflare DNS and edge]
+  cloudflare -->|Tunnel| cloudflared[cloudflared]
+  cloudflared -->|HTTP inside cluster| traefik[Traefik Gateway]
+
+  traefik -->|login portal| authelia[Authelia]
+  traefik -->|Argo CD route| proxy[Argo CD web proxy]
   proxy --> argocd[Argo CD]
-  route -. future approved route .-> service[Workload Service]
+  traefik -->|Grafana route| grafana[Grafana]
+  argocd -. native login .-> authelia
+  grafana -. native login .-> authelia
+  traefik -. future approved route .-> service[Product Service]
   service -. optional ForwardAuth .-> authelia
+
   externalDNS[ExternalDNS] -->|proxied CNAME and TXT; upsert-only| cloudflare
 ```
 
-The Authelia portal and Argo CD UI have public hostnames. Argo CD uses native
-OIDC with Authelia. No product workload route is published. Name.com is the
-registrar and delegates DNS to Cloudflare. The Cloudflare Tunnel uses outbound
-connectivity, so OCI exposes no inbound application ports. See the GitOps
+Name.com is the registrar; Cloudflare hosts the Domain Name System (DNS) and
+the public edge. HTTPS ends at Cloudflare. The Tunnel connects outbound to
+Traefik, so OCI exposes no inbound web ports. Authelia, Argo CD, and Grafana
+have public hostnames. Argo CD and Grafana use native OpenID Connect (OIDC)
+with Authelia. No disease-prediction product route is published. ExternalDNS
+creates proxied canonical name (CNAME) and TXT ownership records for approved
+routes; its upsert-only policy does not delete records.
+
+For route setup, DNS changes, and authentication choices, use the GitOps
 [domain and ingress runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/domain-ingress.md)
 and [Authelia runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/authelia.md).
-
-## Where to make changes
-
-- For OCI resources and Terraform state, use the
-  [infrastructure guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-infra/blob/main/README.md).
-- For cluster bootstrap, access, secrets, routes, and recovery, use the
-  [GitOps operations index](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/README.md).
-- For shared workflow behavior and tool versions, use the
-  [CI guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-ci/blob/main/README.md)
-  and [tool versions](https://github.com/Disease-Prediction-ASET26/disease-prediction-ci/blob/main/TOOL-VERSIONS.md).
