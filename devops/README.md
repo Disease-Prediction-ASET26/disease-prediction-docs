@@ -25,17 +25,21 @@ flowchart LR
   infraRepo --> terraform[Terraform CLI]
   terraform -->|OCI API| oci[OCI resources]
   terraform <-->|remote state| state[(Private versioned state bucket)]
-  oci --> vm[Oracle virtual machine running K3s]
+  oci --> vm[Oracle virtual machine]
+  vm --> oracle[Oracle K3s]
 
   operator -->|reviewed Git changes| gitRepo[GitOps repository]
-  gitRepo -->|Helmfile bootstrap| argocd[Argo CD]
-  argocd -->|syncs checked-in manifests| k3s[K3s cluster]
+  gitRepo -->|Helmfile bootstrap| oracleArgo[Oracle Argo CD]
+  gitRepo -->|Helmfile bootstrap| proxmoxArgo[Proxmox Argo CD]
+  oracleArgo -->|syncs Oracle manifests| oracle
+  proxmoxArgo -->|syncs Proxmox manifests| proxmox[Proxmox K3s]
   gitRepo -->|host manifests and Ansible| host[VM host configuration]
   host --> vm
 
   appRepos[Application repositories] -->|application workflows| sharedCI[Shared GitHub Actions workflows]
   sharedCI -->|check results| results[Workflow results]
-  sharedCI -. branch-selected image build .-> registry[Private container registry]
+  sharedCI -->|builds and scans images| registry[Private container registry]
+  sharedCI -->|checked digest pull request| gitRepo
 ```
 
 The private, versioned Object Storage bucket for Terraform state is created
@@ -46,16 +50,22 @@ definitions (CRDs). Argo CD
 manages the other checked-in cluster manifests after bootstrap; see the
 [Oracle bootstrap guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/bootstrap.md).
 
-Application workflows use the shared GitHub Actions workflows for checks and
-image publishing. Pull requests build the image for their target branch;
-`develop` builds `Dockerfile.dev` and publishes a dev image, while `main`
-builds `Dockerfile.prod` and publishes a production image. After a successful
-dev publish, backend and frontend CI open or update a GitOps pull request with
-the immutable digest. The reviewed AI model-runtime release opens the same kind
-of pull request for its image. Merge the GitOps pull request to let Argo CD
-sync the Oracle dev stack. These workflows need a GitHub App limited to the
-GitOps repository with Contents and Pull requests write access. Configure
-`GITOPS_CLIENT_ID` (the app Client ID) and `GITOPS_APP_PRIVATE_KEY` (the full PEM key) in the application Actions secrets.
+Application workflows build and scan images for Linux AMD64 and ARM64. The
+backend and frontend use `Dockerfile.dev` for `develop` and `Dockerfile.prod`
+for `main`. A successful publish from either branch opens or updates a GitOps
+pull request for the matching environment. The model-runtime workflow packages
+a reviewed classifier and pinned inference assets without training. It updates
+dev after a successful release; production promotion is a separate workflow
+run. Follow the
+[model release guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-ai#model-training-and-release)
+for training and promotion.
+
+The workflows merge a digest update after the GitOps checks pass and the change
+is verified. Argo CD then syncs the corresponding deployment. If a check fails,
+inspect the workflow and open pull request. These workflows need a GitHub App
+limited to the GitOps repository with Contents and Pull requests write access.
+Configure `GITOPS_CLIENT_ID` (the app Client ID) and `GITOPS_APP_PRIVATE_KEY`
+(the full PEM key) in each application repository's Actions secrets.
 
 ## Administration and secrets
 
@@ -75,13 +85,16 @@ The OCI security list allows no inbound SSH, Kubernetes API, HTTP, or HTTPS
 traffic. Use Tailscale for administration. See the GitOps [private access
 runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/tailscale.md).
 
-External Secrets Operator (ESO) reads selected values from OCI Vault and
-creates Kubernetes Secrets. K3s encrypts those Secrets at rest. The OCI
-Instance Principal belongs to the Oracle virtual machine (VM), not to an ESO
-pod, and its policy can read every secret in the Vault. A pod that can reach
-the OCI metadata endpoint may be able to use that permission. Run only trusted
-workloads until metadata access is restricted. See the GitOps [secrets
+On Oracle, External Secrets Operator (ESO) reads selected values from OCI Vault
+and creates Kubernetes Secrets. On Proxmox, ESO reads the local Vault for
+database credentials and model image access. K3s encrypts Kubernetes Secrets at
+rest. The OCI Instance Principal belongs to the Oracle virtual machine (VM),
+not to an ESO pod, and its policy can read every secret in the Vault. A pod
+that can reach the OCI metadata endpoint may be able to use that permission.
+Run only trusted workloads until metadata access is restricted. See the GitOps [secrets
 runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/secrets.md).
+For local Vault and database operations, see the
+[Proxmox data services guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/proxmox-data-services.md).
 
 ## Public traffic
 
@@ -97,10 +110,10 @@ flowchart LR
   traefik -->|Grafana route| grafana[Grafana]
   traefik -->|ForwardAuth check| authelia[Authelia]
   authelia -->|allow or deny| traefik
-  traefik -->|dev.pocket-doc.app after auth| frontend[Disease Prediction frontend]
-  frontend -->|/api| backend[Disease Prediction backend]
-  backend -->|POST /predict| ai[Disease Prediction AI]
-  backend -->|TLS over Tailscale| postgres[Proxmox PostgreSQL]
+  traefik -->|dev or production after auth| frontend[Environment frontend on Oracle]
+  frontend -->|/api| backend[Environment backend on Oracle]
+  backend -->|HTTP over Tailscale| model[Environment model service on Proxmox]
+  backend -->|TLS over Tailscale| postgres[(Proxmox PostgreSQL)]
   argocd -. native login .-> authelia
   grafana -. native login .-> authelia
 
@@ -111,15 +124,19 @@ Name.com is the registrar; Cloudflare hosts the Domain Name System (DNS) and
 the public edge. HTTPS ends at Cloudflare. The Tunnel connects outbound to
 Traefik, so OCI exposes no inbound web ports. Authelia, Argo CD, and Grafana
 have public hostnames. Argo CD and Grafana use native OpenID Connect (OIDC)
-with Authelia. The Disease Prediction dev route is
-`dev.pocket-doc.app`, protected by Authelia ForwardAuth and its two-factor
-policy. Only the frontend has a public route; backend and AI remain internal.
-`health.pocket-doc.app` is reserved for a future production route. ExternalDNS
-creates proxied canonical name (CNAME) and TXT ownership records for approved
-routes; its upsert-only policy does not delete records.
+with Authelia. Disease Prediction uses `dev.pocket-doc.app` for dev and
+`health.pocket-doc.app` for production. Both routes use Authelia ForwardAuth
+with two-factor login. Only the frontends have public routes.
 
-See the GitOps [Disease Prediction dev runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/disease-prediction.md)
-for Vault prerequisites, activation, route checks, and rollback.
+Each environment has its own frontend and backend on Oracle and model service
+on Proxmox. Each backend uses Tailscale to reach its model service and the
+database. Dev and production have separate databases, roles, and credentials
+on the same PostgreSQL instance, so they share its storage and availability.
+ExternalDNS creates proxied canonical name (CNAME) and TXT ownership records for
+approved routes; its upsert-only policy does not delete records.
+
+See the GitOps [Disease Prediction runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/disease-prediction.md)
+for Vault prerequisites, deployment, route checks, and rollback.
 
 For route setup, DNS changes, and authentication choices, use the GitOps
 [domain and ingress runbook](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/domain-ingress.md)
