@@ -108,9 +108,7 @@ flowchart LR
   traefik -->|Argo CD route| proxy[Argo CD web proxy]
   proxy --> argocd[Argo CD]
   traefik -->|Grafana route| grafana[Grafana]
-  traefik -->|ForwardAuth check| authelia[Authelia]
-  authelia -->|allow or deny| traefik
-  traefik -->|dev or production after auth| frontend[Environment frontend on Oracle]
+  traefik -->|dev or production| frontend[Environment frontend on Oracle]
   frontend -->|/api| backend[Environment backend on Oracle]
   backend -->|HTTP over Tailscale| model[Environment model service on Proxmox]
   backend -->|TLS over Tailscale| postgres[(Proxmox PostgreSQL)]
@@ -125,8 +123,9 @@ the public edge. HTTPS ends at Cloudflare. The Tunnel connects outbound to
 Traefik, so OCI exposes no inbound web ports. Authelia, Argo CD, and Grafana
 have public hostnames. Argo CD and Grafana use native OpenID Connect (OIDC)
 with Authelia. Disease Prediction uses `dev.pocket-doc.app` for dev and
-`health.pocket-doc.app` for production. Both routes use Authelia ForwardAuth
-with two-factor login. Only the frontends have public routes.
+`health.pocket-doc.app` for production. Both frontend routes and their proxied
+APIs are public without login. Hanko is prepared for app authentication, but the
+app does not yet use it. See the GitOps [Hanko guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-gitops/blob/main/docs/operations/hanko.md).
 
 Each environment has its own frontend and backend on Oracle and model service
 on Proxmox. Each backend uses Tailscale to reach its model service and the
