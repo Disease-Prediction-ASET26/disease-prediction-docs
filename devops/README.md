@@ -55,8 +55,8 @@ backend and frontend use `Dockerfile.dev` for `develop` and `Dockerfile.prod`
 for `main`. A successful publish from either branch opens or updates a GitOps
 pull request for the matching environment. The model-runtime workflow packages
 a reviewed classifier and pinned inference assets without training. It updates
-dev after a successful release; production promotion is a separate workflow
-run. Follow the
+the matching environment after a successful branch build. Production uses a
+separate approved classifier pin. Follow the
 [model release guide](https://github.com/Disease-Prediction-ASET26/disease-prediction-ai#model-training-and-release)
 for training and promotion.
 
