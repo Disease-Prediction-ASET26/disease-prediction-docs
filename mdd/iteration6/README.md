@@ -364,7 +364,7 @@ The Kubernetes probes use TCP checks, so no public health endpoint is needed.
    Iteration 5 encryption, cascades and consent history cover them (data minimization, NFR-1).
 6. **Consent is enforced, not only stored.** Iteration 5 stored consent history; now an assessment
    without an active consent is refused. In this iteration the check is a direct call to
-   `ProfileService.requireActiveConsent`; Part B replaces it with the `@RequiresActiveConsent`
+   `ProfileService.requireConsentingPatient`; Part B replaces it with the `@RequiresActiveConsent`
    annotation.
 
 ---
@@ -380,10 +380,10 @@ The Kubernetes probes use TCP checks, so no public health endpoint is needed.
 | `HankoProperties` | `@ConfigurationProperties("app.auth.hanko")`: `apiUrl`, `sessionCheckTtl` | `security/hanko/` |
 | `HankoSessionClient`, `HttpHankoSessionClient` | `RestClient` call to `POST /sessions/validate` with `{"session_token": ...}` | `security/hanko/` |
 | `HankoSessionCheckFilter` | runs after `BearerTokenAuthenticationFilter`; Caffeine cache keyed by `session_id`; 401 or 503 | `security/hanko/` |
-| `RoleAuthoritiesConverter` | loads the user by `sub`, adds `ROLE_<role>` | `security/` |
+| `RoleAuthoritiesConverter` | loads the user by `sub`, adds `ROLE_<role>`. Created by `SecurityConfig`, not a bean: Spring MVC would register any `Converter` bean as a web type converter | `security/` |
 | `AuthenticatedIdentity`, `CurrentUserService` | built from the `Jwt` principal | `security/` |
 | Profile API | OpenAPI `profile-api.yaml` → generated `ProfileApi` + DTOs; `ProfileController`, `ProfileService` | `resources/openapi/`, `controller/`, `service/profile/` |
-| Consent on assessments | `AssessmentController` calls `CurrentUserService.requirePatient()` and `ProfileService.requireActiveConsent()` | `controller/` |
+| Consent on assessments | `AssessmentApiService.runAssessment` calls `ProfileService.requireConsentingPatient()` first (the backend rule: controllers only delegate) | `service/assessment/` |
 | Local Hanko | `compose.yaml`: `hanko-db`, `hanko-migrate`, `hanko` (`127.0.0.1:8100`), `mailpit`; `local/hanko/config.yaml` | repository root |
 | Stale comments | "Keycloak" → "Hanko" in the Java comments (`User.java` and others). `V1__create_users_and_consents.sql` is not edited: any change alters its Flyway checksum and breaks databases where it already ran | `domain/` |
 
@@ -431,7 +431,22 @@ within a minute, wait for expiry with a short local lifespan.
 
 ## Step 6 — Review & refine the model
 
-To be filled in after implementation.
+Backend findings so far (PR `feat/hanko-authentication`); the frontend part follows.
+
+1. **The consent check moved from the controller to the service.** The backend convention keeps
+   controllers as pure delegates, so `AssessmentApiService` calls
+   `ProfileService.requireConsentingPatient()` before any validation or prediction.
+2. **The role converter is not a Spring bean.** Spring MVC registers every `Converter` bean as a
+   web type converter, which broke the controller slice tests. `SecurityConfig` creates it.
+3. **Hanko asks for a password at registration.** Hanko v3.1.0 enables passwords by default
+   (`password.enabled: true`), and neither the local nor the dev configuration turns them off.
+   Registration is therefore: email, passcode, password, optional MFA. The local configuration
+   mirrors dev. Whether to keep passwords (or rely on passcodes, passkeys and Google only) is a
+   decision for the team and DevOps.
+4. **Verified against the real Hanko.** A local registration produced a token with exactly the
+   modelled claims (`sub`, `session_id`, `email.address`, `email.is_verified`, `aud`, RS256, 1 hour
+   lifetime). After a Hanko logout, the API refused the token once the 60-second cache window had
+   passed.
 
 ---
 
