@@ -431,7 +431,7 @@ within a minute, wait for expiry with a short local lifespan.
 
 ## Step 6 — Review & refine the model
 
-Backend findings so far (PR `feat/hanko-authentication`); the frontend part follows.
+Findings from the backend (PR `feat/hanko-authentication`) and frontend (PR `feat/hanko-login`).
 
 1. **The consent check moved from the controller to the service.** The backend convention keeps
    controllers as pure delegates, so `AssessmentApiService` calls
@@ -447,6 +447,16 @@ Backend findings so far (PR `feat/hanko-authentication`); the frontend part foll
    modelled claims (`sub`, `session_id`, `email.address`, `email.is_verified`, `aud`, RS256, 1 hour
    lifetime). After a Hanko logout, the API refused the token once the 60-second cache window had
    passed.
+5. **Sign-out must leave the protected page first.** Ending the session while still on a
+   protected route let its guard redirect to `/login` before the app could go home. The app now
+   navigates to the home page, then ends the session.
+6. **The Hanko URL is set in the Dockerfiles.** The shared container workflow passes no build
+   arguments, so `VITE_HANKO_API_URL` defaults to the dev Hanko in `Dockerfile.dev` and to the
+   production Hanko in `Dockerfile.prod`. Hanko Elements load on demand in their own chunk.
+7. **Verified in a real browser.** Playwright (Chromium) against the local Hanko, the real backend
+   and the Vite dev server: register (passcode from Mailpit, password), onboarding (save disabled
+   without consent), assessment, withdraw and give consent, reload, sign out, sign in again with
+   the password. Every API call carried the Bearer token.
 
 ---
 
