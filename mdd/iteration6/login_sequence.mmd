@@ -1,0 +1,41 @@
+sequenceDiagram
+    autonumber
+    actor Patient
+    participant App as Patient Web App (React)
+    participant Hanko as Hanko (identity)
+    participant API as API Backend (Spring Boot)
+    participant DB as App database (PostgreSQL)
+
+    Patient->>App: Open a protected page
+    App->>App: RequireAuth: no session
+    App-->>Patient: Redirect to /login (hanko-auth)
+    Patient->>Hanko: Register or log in (email passcode, passkey or Google)
+    Hanko-->>App: Session JWT (X-Auth-Token), stored by the Hanko SDK
+    App->>App: onSessionCreated: status = authenticated
+
+    App->>API: GET /api/me, Authorization: Bearer JWT
+    API->>API: Check signature (RS256, JWKS), exp, iss, aud
+    API->>Hanko: POST /sessions/validate (cached per session_id)
+    Hanko-->>API: is_valid = true
+    API->>DB: Find user by identity_id = sub
+    DB-->>API: not found
+    API-->>App: 404 profile-not-found
+    App-->>Patient: Redirect to /onboarding
+
+    Patient->>App: Full name, date of birth, consent
+    App->>API: POST /api/me, Bearer JWT
+    API->>DB: Insert users + patients + first consents row
+    API-->>App: 201 Profile (role PATIENT)
+
+    Patient->>App: Submit an assessment
+    App->>API: POST /api/assessments, Bearer JWT
+    API->>DB: Load role by sub (ROLE_PATIENT), check active consent
+    API-->>App: 200 prediction result
+
+    alt Session expired or logged out
+        App->>API: Request with expired or revoked JWT
+        API-->>App: 401 (WWW-Authenticate: Bearer)
+        App-->>Patient: Redirect to /login
+    else Hanko unreachable
+        API-->>App: 503 identity-unavailable (deny, do not trust the token)
+    end

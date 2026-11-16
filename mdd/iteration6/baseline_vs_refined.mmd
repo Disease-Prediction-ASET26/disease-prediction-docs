@@ -1,0 +1,28 @@
+flowchart TB
+    subgraph BEFORE["Baseline (after Iteration 5)"]
+        direction TB
+        B1["POST /api/assessments<br/>is public"]:::problem
+        B2["users.identity_id exists,<br/>but nothing fills it"]
+        B3["Plan: Keycloak in Compose and K3s,<br/>roles in Keycloak,<br/>React OIDC login (PKCE)"]
+        B4["No endpoint creates or reads users"]:::missing
+        B5["Consent stored, never checked"]:::problem
+    end
+
+    subgraph AFTER["Refined (Iteration 6)"]
+        direction TB
+        A1["Every /api/** request needs<br/>a Hanko session JWT (Bearer)"]
+        A2["Backend checks RS256 signature (JWKS),<br/>exp, iss, aud, then the Hanko session<br/>(cached, fails closed)"]
+        A3["identity_id = Hanko user id (sub).<br/>First login: GET /api/me 404,<br/>POST /api/me creates Patient + consent"]
+        A4["Roles stay in the app database.<br/>New users are PATIENT,<br/>doctors promoted inside the app"]
+        A5["Assessments need ROLE_PATIENT<br/>and an active consent"]
+        A6["React: hanko-auth, AuthProvider,<br/>RequireAuth, onboarding, Bearer client"]
+    end
+
+    HK["Hanko v3.1.0 (deployed by DevOps)<br/>credentials, passkeys, passcodes, Google,<br/>15 min to 1 h sessions"]:::external
+
+    BEFORE ==>|"replace Keycloak with the Hanko<br/>instance DevOps already runs,<br/>protect the API on the server,<br/>add first-login onboarding,<br/>enforce consent"| AFTER
+    AFTER -.->|"sub, email claim,<br/>/sessions/validate"| HK
+
+    classDef missing stroke-dasharray: 5 5,color:#999,stroke:#999;
+    classDef problem fill:#ffe0e0,stroke:#c0392b,color:#7b1e14;
+    classDef external fill:#e8e8e8,stroke:#666,color:#222;
