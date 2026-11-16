@@ -1,0 +1,90 @@
+classDiagram
+    class AuditedAccess {
+        <<annotation>>
+        +AccessAction action
+        +ResourceType resource
+        +String resourceId = SpEL, optional
+    }
+    class RequiresActiveConsent {
+        <<annotation>>
+    }
+    class OwnedResource {
+        <<annotation>>
+        +ResourceType resource
+        +String id = SpEL over method arguments
+    }
+    class AccessAuditAspect {
+        <<@Aspect, @Order 1>>
+        +around(ProceedingJoinPoint, AuditedAccess) Object
+    }
+    class ConsentAspect {
+        <<@Aspect, @Order 2>>
+        +before(JoinPoint, RequiresActiveConsent)
+    }
+    class OwnershipAspect {
+        <<@Aspect, @Order 3>>
+        +before(JoinPoint, OwnedResource)
+    }
+    class ResourceIdExtractor {
+        +extract(JoinPoint, String spel) UUID
+    }
+    class OwnershipResolver {
+        <<interface, Strategy>>
+        +resource() ResourceType
+        +ownerOf(UUID resourceId) Optional~UUID~
+        +isSharedWith(UUID resourceId, UUID doctorId) boolean
+    }
+    class OwnershipResolverRegistry {
+        +resolverFor(ResourceType) OwnershipResolver
+    }
+    class PatientProfileOwnershipResolver
+    class AssessmentOwnershipResolver {
+        <<Iteration 7>>
+    }
+    class AuditTrail {
+        +record(AccessAuditEvent)
+    }
+    note for AuditTrail "@Transactional(REQUIRES_NEW):<br>denied calls are recorded<br>even when the caller rolls back"
+    class AccessAuditEvent {
+        <<@Entity, append-only>>
+        -UUID id
+        -OffsetDateTime occurredAt
+        -UUID actorUserId
+        -UserRole actorRole
+        -AccessAction action
+        -ResourceType resourceType
+        -UUID resourceId
+        -AccessOutcome outcome
+        -String reasonCode
+        -String requestId
+    }
+    class DeniedAccessMonitor {
+        <<stretch goal>>
+        +onDenied(UUID actor)
+        +isBlocked(UUID actor) boolean
+    }
+    class AccessOutcome {
+        <<enumeration>>
+        ALLOWED
+        DENIED
+        FAILED
+    }
+    class CurrentUserService {
+        <<Iteration 6>>
+    }
+
+    AccessAuditAspect ..> AuditedAccess : intercepts
+    ConsentAspect ..> RequiresActiveConsent : intercepts
+    OwnershipAspect ..> OwnedResource : intercepts
+    AccessAuditAspect --> AuditTrail
+    AccessAuditAspect --> DeniedAccessMonitor
+    AuditTrail ..> AccessAuditEvent : persists
+    AccessAuditEvent --> AccessOutcome
+    OwnershipAspect --> ResourceIdExtractor
+    OwnershipAspect --> OwnershipResolverRegistry
+    OwnershipResolverRegistry o-- OwnershipResolver
+    PatientProfileOwnershipResolver ..|> OwnershipResolver
+    AssessmentOwnershipResolver ..|> OwnershipResolver
+    ConsentAspect --> CurrentUserService
+    OwnershipAspect --> CurrentUserService
+    AccessAuditAspect --> CurrentUserService

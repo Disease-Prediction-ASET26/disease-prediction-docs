@@ -417,6 +417,38 @@ The model (ER, class and baseline-vs-refined diagrams), the reasons for each cha
 model-to-code mapping, the test results and the review (Steps 3–6) are in
 **`iteration5/README.md`**.
 
+## Iteration 6 — Identity and Login with Hanko (Java backend + React)
+
+Status: **designed** (implementation on one branch per repository). Second step of the "secured
+before stored" plan: every API request carries a Hanko session token, the backend verifies it
+and maps it to the Iteration 5 user, and a first-login onboarding step creates the patient
+profile and records consent.
+
+### Step 1 — Requirements envisioning
+
+- Slice: register, log in, log out, first-login onboarding, consent grant and revoke, server-side
+  protection of the assessment API. Every `/api/**` endpoint requires login.
+- Anchored to: NFR-1 (GDPR Article 9), FR-G1 (consent), UC1 step 1 (consent before symptom
+  input), the domain rule "users must log in".
+
+### Step 2 — Architecture / platform envisioning
+
+- **Identity provider:** Hanko v3.1.0, already deployed by DevOps on K3s (dev and production
+  instances), replaces the Keycloak plan from Iteration 5 and the roadmap. `identity_id` holds the
+  Hanko user id (the token's `sub`); the schema does not change.
+- **Session transport:** `Authorization: Bearer <Hanko session JWT>`. No refresh tokens; the
+  session lifespan goes from 15 minutes to 1 hour.
+- **Backend:** Spring Security OAuth2 resource server (RS256, JWKS, issuer, audience) plus a
+  cached `POST /sessions/validate` check for logout and revocation, failing closed.
+- **Roles:** stay in the app database (the Iteration 5 discriminator). New users are patients.
+- **Frontend:** Hanko Elements (`<hanko-auth>`), an auth context, route guards and an onboarding
+  page.
+- **Local development:** Hanko, its database and a mail catcher in the backend's Docker Compose.
+
+The model (sequence, class and baseline-vs-refined diagrams), the API contract changes, the
+model-to-code plan, the test plan, and the design of the AOP component (Part B, Personal Data
+Access Guard) are in **`iteration6/README.md`**.
+
 ## Coordinator & team notes
 
 - Coordinator: `<fill in name>` — tracks who did what and negotiates per-member points (Lab05
@@ -427,6 +459,8 @@ model-to-code mapping, the test results and the review (Steps 3–6) are in
   - Iteration 3 — Patient Web App: prediction feature (React frontend) — `<owner>` (planned; see `MDD_ITERATIONS_FE_PLAN.md`, Part 1)
   - Iteration 4 — Patient Web App: client-side routing (React Router) — `<owner>` (planned; see `MDD_ITERATIONS_FE_PLAN.md`, Part 2)
   - Iteration 5 — User and consent persistence (Java backend) — `<owner>` (implemented; see `iteration5/README.md`)
+  - Iteration 6 — Identity and login with Hanko (Java backend + React) — `<owner>` (designed; see `iteration6/README.md`)
+  - AOP component — Personal Data Access Guard (Java backend) — Daria (designed; see `iteration6/README.md`, Part B)
 - Repository / process (Lab05 Theme 2 — GitHub): GitFlow branching (main ← develop ← feature
   branches), CI pipeline (lint, build, secret scan, OWASP dependency scan, SonarQube gate,
   containerize), and pre-commit hooks (ruff + hygiene). Process/DevOps evidence for the GitHub

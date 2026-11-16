@@ -1,0 +1,107 @@
+classDiagram
+    namespace Backend {
+        class SecurityConfig {
+            <<@Configuration>>
+            +securityFilterChain(HttpSecurity) SecurityFilterChain
+        }
+        class HankoProperties {
+            <<@ConfigurationProperties app.auth.hanko>>
+            -URI apiUrl
+            -Duration sessionCheckTtl
+        }
+        class HankoSessionClient {
+            <<interface>>
+            +validate(String sessionToken) SessionStatus
+        }
+        class HttpHankoSessionClient {
+            <<RestClient>>
+        }
+        class HankoSessionCheckFilter {
+            <<OncePerRequestFilter>>
+            -Cache sessionIdToStatus
+        }
+        class RoleAuthoritiesConverter {
+            <<Converter Jwt to Authentication>>
+            +convert(Jwt) AbstractAuthenticationToken
+        }
+        class AuthenticatedIdentity {
+            <<record>>
+            +String subject
+            +String sessionId
+            +String email
+            +boolean emailVerified
+        }
+        class CurrentUserService {
+            +identity() AuthenticatedIdentity
+            +currentUser() Optional~User~
+            +requirePatient() Patient
+        }
+        class ProfileController {
+            <<implements generated ProfileApi>>
+            +getProfile() Profile
+            +createProfile(CreateProfileRequest) Profile
+            +recordConsent(ConsentRequest) Profile
+        }
+        class ProfileService {
+            +getProfile(AuthenticatedIdentity) Profile
+            +createPatient(AuthenticatedIdentity, CreateProfileRequest) Profile
+            +recordConsent(Patient, boolean) Profile
+            +requireActiveConsent(Patient)
+        }
+        class UserRepository {
+            <<Iteration 5>>
+            +findByIdentityId(String) Optional~User~
+        }
+    }
+    namespace Frontend {
+        class AuthProvider {
+            <<React context>>
+            +status loading | anonymous | authenticated
+            +getToken() string
+            +logout()
+        }
+        class ProfileProvider {
+            <<React context>>
+            +status loading | needs-onboarding | ready
+            +profile Profile
+        }
+        class RequireAuth {
+            <<route guard>>
+        }
+        class RequireProfile {
+            <<route guard>>
+        }
+        class LoginRoute {
+            <<hanko-auth>>
+        }
+        class OnboardingRoute
+        class AccountRoute {
+            <<hanko-profile, consent, logout>>
+        }
+        class AuthorizedFetch {
+            +fetch(path, init) Response
+        }
+        class HttpProfileApiClient
+        class HttpAssessmentApiClient {
+            <<Iteration 3>>
+        }
+    }
+
+    SecurityConfig --> RoleAuthoritiesConverter : jwtAuthenticationConverter
+    SecurityConfig --> HankoSessionCheckFilter : after bearer filter
+    HankoSessionCheckFilter --> HankoSessionClient
+    HttpHankoSessionClient ..|> HankoSessionClient
+    HttpHankoSessionClient --> HankoProperties
+    RoleAuthoritiesConverter --> UserRepository : role by sub
+    CurrentUserService --> UserRepository
+    CurrentUserService ..> AuthenticatedIdentity : creates from Jwt
+    ProfileController --> ProfileService
+    ProfileController --> CurrentUserService
+    ProfileService --> UserRepository
+
+    RequireAuth --> AuthProvider
+    RequireProfile --> ProfileProvider
+    ProfileProvider --> HttpProfileApiClient
+    HttpProfileApiClient --> AuthorizedFetch
+    HttpAssessmentApiClient --> AuthorizedFetch
+    AuthorizedFetch --> AuthProvider : Bearer token, 401 means logout
