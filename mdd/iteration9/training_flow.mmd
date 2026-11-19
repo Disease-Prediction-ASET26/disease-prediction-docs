@@ -1,0 +1,11 @@
+flowchart TD
+    DS["dataset.csv (Kaggle)"] --> AN["anonymize: scrub ids and free text (NFR-2)"]
+    AN --> FE["encode_entries: severity-weighted vectors"]
+    FE --> TR["train.py: fit every strategy"]
+    TR --> BEST["pick the best strategy"]
+    BEST --> CAL["CalibratedStrategy: CalibratedClassifierCV"]
+    CAL --> SAVE["save best.joblib and a manifest"]
+    SAVE --> STORE["ModelStore: version, metadata, mark active"]
+    STORE --> LOAD["API loads the active model"]
+    LOAD --> CLF["DiseaseClassifier.predict(entries)"]
+    CLF --> EXP["ExplanationGenerator: per-symptom weights"]

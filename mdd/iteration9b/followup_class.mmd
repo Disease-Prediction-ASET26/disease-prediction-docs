@@ -1,0 +1,50 @@
+classDiagram
+    namespace PredictionService_Python {
+        class SymptomAssociationIndex {
+            +most_discriminating(top, runner_up, asked) str
+        }
+        class FollowUpService {
+            +continue_loop(confirmed, denied, answer) PredictResponse
+        }
+        class FastAPIApp {
+            +POST /predict
+            +POST /predict/followup
+        }
+    }
+    namespace Backend_Java {
+        class AssessmentController {
+            +submitFollowup(FollowupRequest) AssessmentResponse
+        }
+        class AssessmentApiService {
+            +continueAssessment(FollowupRequest) AssessmentResponse
+        }
+        class PredictionClient {
+            +predictFollowUp(confirmed, denied, rounds) PredictionResult
+        }
+        class ProfileService {
+            +requireConsentingPatient() Patient
+        }
+    }
+    namespace Frontend_React {
+        class AssessmentPage
+        class FollowUpQuestion {
+            +yes / no
+        }
+        class useAssessment {
+            +answerFollowUp(present)
+        }
+        class HttpAssessmentApiClient {
+            +submitFollowUp(FollowUpRequest) PredictionResult
+        }
+    }
+
+    FastAPIApp --> FollowUpService : /predict/followup
+    FollowUpService --> SymptomAssociationIndex : pick question
+    AssessmentController --> AssessmentApiService
+    AssessmentApiService --> ProfileService : consent gate
+    AssessmentApiService --> PredictionClient
+    PredictionClient --> FastAPIApp : POST /predict/followup
+    AssessmentPage --> FollowUpQuestion
+    AssessmentPage --> useAssessment
+    useAssessment --> HttpAssessmentApiClient
+    HttpAssessmentApiClient --> AssessmentController : POST /api/assessments/followup

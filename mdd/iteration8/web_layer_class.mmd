@@ -1,0 +1,41 @@
+classDiagram
+    class FastAPIApp {
+        +POST /predict
+        +POST /predict/followup
+        +POST /map-symptoms
+        +POST /red-flags/check
+        +GET /diseases/{name}
+        +GET /health
+        +GET /ready
+    }
+    class PredictRequest {
+        +str text
+    }
+    class PredictResponse {
+        +PredictionItem[] predictions
+        +RedFlag[] redFlags
+        +Urgency urgency
+        +bool needs_follow_up
+        +FollowUp follow_up
+    }
+    class PredictionPipeline {
+        +predict(text) PredictionResult
+        +classifier
+    }
+    class RedFlagEngine {
+        +evaluate(active) RedFlag[]
+    }
+    class DiseaseKnowledgeBase {
+        +describe(disease)
+        +precautions(disease)
+    }
+    class SpecialtyMapper {
+        +specialty_for(disease)
+    }
+
+    FastAPIApp --> PredictRequest : validates
+    FastAPIApp --> PredictResponse : returns
+    FastAPIApp --> PredictionPipeline : get_pipeline (Depends)
+    FastAPIApp --> RedFlagEngine : get_red_flag_engine (Depends)
+    FastAPIApp --> DiseaseKnowledgeBase : get_knowledge (Depends)
+    FastAPIApp --> SpecialtyMapper : get_specialty_mapper (Depends)
