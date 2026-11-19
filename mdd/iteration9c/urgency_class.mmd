@@ -1,0 +1,67 @@
+classDiagram
+    namespace PredictionService_Python {
+        class RedFlagEngine {
+            +check(active_symptoms) RedFlag[]
+            +highest_urgency(active_symptoms) Urgency
+        }
+        class RedFlagRule {
+            +name
+            +urgency Urgency
+            +message
+            +triggers
+            +min_matches
+        }
+        class FastAPIApp {
+            +POST /predict
+            +POST /predict/followup
+            +POST /red-flags/check
+        }
+        class PredictResponse {
+            +red_flags RedFlagItem[]
+            +highest_urgency Urgency
+        }
+        class DiseaseKnowledgeBase {
+            +describe(disease)
+            +precautions_for(disease)
+        }
+    }
+    namespace Backend_Java {
+        class HttpPredictionClient {
+            +predict(freeText, entries) PredictionResult
+            +predictFollowUp(confirmed, denied, rounds) PredictionResult
+        }
+        class AssessmentApiService {
+            +runAssessment(AssessmentRequest) AssessmentResponse
+            +continueAssessment(FollowupRequest) AssessmentResponse
+            -isEmergency(result) boolean
+        }
+        class PredictionResult {
+            +redFlags RedFlag[]
+            +highestUrgency Urgency
+        }
+    }
+    namespace Frontend_React {
+        class AssessmentPage
+        class UrgencyBanner {
+            +urgency Urgency
+            +redFlags RedFlag[]
+        }
+        class urgencyOf {
+            +response AssessmentResponse
+        }
+        class EmergencyRoute
+        class ResultRoute
+    }
+
+    RedFlagEngine --> RedFlagRule : evaluates
+    FastAPIApp --> RedFlagEngine : every prediction
+    FastAPIApp --> DiseaseKnowledgeBase : description, precautions
+    FastAPIApp ..> PredictResponse
+    HttpPredictionClient --> FastAPIApp : POST /predict
+    HttpPredictionClient ..> PredictionResult : relays red flags
+    AssessmentApiService --> HttpPredictionClient
+    AssessmentApiService ..> PredictionResult : emergencyDetected = EMERGENCY
+    AssessmentPage --> UrgencyBanner
+    EmergencyRoute --> UrgencyBanner : EMERGENCY
+    ResultRoute --> UrgencyBanner : URGENT
+    AssessmentPage ..> urgencyOf

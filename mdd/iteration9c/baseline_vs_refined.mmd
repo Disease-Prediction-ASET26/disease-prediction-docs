@@ -1,0 +1,18 @@
+flowchart TB
+    subgraph BEFORE["Baseline (after Iteration 9b)"]
+        direction TB
+        B1["AI: RedFlagEngine only on /red-flags/check.<br/>/predict returns no red flags"]:::problem
+        B2["Backend: its own keyword list (RED_FLAG_PHRASES)<br/>gives a yes/no emergencyDetected"]:::problem
+        B3["Frontend: one banner for emergencyDetected.<br/>No difference between ambulance and doctor"]:::problem
+        B4["One disease loses its description<br/>(hemorrhoids spelling mismatch)"]:::problem
+    end
+    subgraph AFTER["Refined (Iteration 9c, FR-P5)"]
+        direction TB
+        A1["AI: /predict and /predict/followup attach<br/>red_flags + highest_urgency (single source of truth)"]
+        A2["Backend: relays redFlags + highestUrgency.<br/>emergencyDetected = highestUrgency == EMERGENCY"]
+        A3["Frontend: UrgencyBanner. EMERGENCY = call 112,<br/>URGENT = see a doctor promptly"]
+        A4["Knowledge base: 41 / 41 diseases have a<br/>description and precautions (test)"]
+        A1 --> A2 --> A3
+    end
+    BEFORE ==>|"move red-flag detection to the AI and relay the urgency level"| AFTER
+    classDef problem fill:#ffe0e0,stroke:#c0392b,color:#7b1e14;

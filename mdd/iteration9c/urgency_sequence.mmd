@@ -1,0 +1,24 @@
+sequenceDiagram
+    autonumber
+    actor Patient
+    participant FE as Web App (React)
+    participant BE as Backend (Spring Boot)
+    participant AI as Prediction Service (Python)
+
+    Patient->>FE: Describe or tick symptoms, submit
+    FE->>BE: POST /api/assessments
+    BE->>BE: requireConsentingPatient()
+    BE->>AI: POST /predict
+    AI->>AI: Parse symptoms, predict
+    AI->>AI: RedFlagEngine.check(active symptoms)
+    AI-->>BE: predictions + red_flags + highest_urgency
+    BE->>BE: emergencyDetected = (highestUrgency == EMERGENCY)
+    BE-->>FE: result.redFlags + result.highestUrgency + emergencyDetected
+
+    alt highestUrgency = EMERGENCY
+        FE-->>Patient: Red alert "Call an ambulance (112) now". No prediction is shown
+    else highestUrgency = URGENT
+        FE-->>Patient: Amber banner "See a doctor promptly", then the result
+    else no urgency (or ADVISORY)
+        FE-->>Patient: The result and the disclaimer only
+    end
