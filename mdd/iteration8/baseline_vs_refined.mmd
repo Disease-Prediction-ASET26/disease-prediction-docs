@@ -1,0 +1,16 @@
+flowchart TB
+    subgraph BEFORE["Baseline (after Iteration 1)"]
+        direction TB
+        B1["SymptomParser and pipeline are Python classes"]
+        B2["No HTTP surface. The backend uses a stub"]:::problem
+    end
+    subgraph AFTER["Refined (Iteration 8)"]
+        direction TB
+        A1["FastAPI app wraps the pipeline"]
+        A2["POST /predict, /map-symptoms,<br/>/red-flags/check, GET /diseases/{name}"]
+        A3["pydantic validation, 422 on bad input"]
+        A4["Dependencies injected with Depends,<br/>cached with lru_cache"]
+        A1 --> A2 --> A3 --> A4
+    end
+    BEFORE ==>|"show the pipeline on HTTP so the backend calls a real service"| AFTER
+    classDef problem fill:#ffe0e0,stroke:#c0392b,color:#7b1e14;

@@ -1,0 +1,16 @@
+flowchart TB
+    subgraph BEFORE["Baseline (after Iterations 8 and 9)"]
+        direction TB
+        B1["One-shot /predict: symptoms in, diseases out"]
+        B2["A vague description gives low confidence.<br/>There is no way to ask for more"]:::problem
+    end
+    subgraph AFTER["Refined (Iteration 9b, FR-P3)"]
+        direction TB
+        A1["The AI asks the most discriminating<br/>symptom as a yes/no question"]
+        A2["POST /predict/followup adds the answer<br/>and predicts again (stateless, round limit)"]
+        A3["The backend adds a consent-gated endpoint"]
+        A4["React runs the loop and shows only<br/>the final result"]
+        A1 --> A2 --> A3 --> A4
+    end
+    BEFORE ==>|"add a yes/no loop across AI, backend and frontend"| AFTER
+    classDef problem fill:#ffe0e0,stroke:#c0392b,color:#7b1e14;

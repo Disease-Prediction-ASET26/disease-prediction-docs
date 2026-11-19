@@ -1,0 +1,40 @@
+classDiagram
+    class ClassifierStrategy {
+        +classify(entries) DiseasePrediction[]
+    }
+    class SklearnStrategy {
+        +fit(features, labels)
+        +with_explanations(gen) SklearnStrategy
+    }
+    class RandomForestStrategy
+    class KNNStrategy
+    class DecisionTreeStrategy
+    class NaiveBayesStrategy
+    class CalibratedStrategy
+    class DiseaseClassifier {
+        +predict(entries) DiseasePrediction[]
+    }
+    class ModelFactory {
+        +create_classifier() ClassifierStrategy
+    }
+    class ExplanationGenerator {
+        +explain(vector, estimator, class) Explanation
+    }
+    class SpecialtyMapper {
+        +specialty_for(disease) str
+    }
+    class ModelStore {
+        +save(strategy, metadata) version
+        +load_active() SklearnStrategy
+    }
+
+    SklearnStrategy ..|> ClassifierStrategy
+    RandomForestStrategy --|> SklearnStrategy
+    KNNStrategy --|> SklearnStrategy
+    DecisionTreeStrategy --|> SklearnStrategy
+    NaiveBayesStrategy --|> SklearnStrategy
+    CalibratedStrategy --|> SklearnStrategy
+    DiseaseClassifier --> ClassifierStrategy : wraps
+    ModelFactory ..> ClassifierStrategy : creates
+    SklearnStrategy --> ExplanationGenerator : optional
+    ModelStore ..> SklearnStrategy : persists (joblib)

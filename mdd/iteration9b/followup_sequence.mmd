@@ -1,0 +1,34 @@
+sequenceDiagram
+    autonumber
+    actor Patient
+    participant FE as Web App (React)
+    participant BE as Backend (Spring Boot)
+    participant AI as Prediction Service (Python)
+
+    Patient->>FE: Describe symptoms, submit
+    FE->>BE: POST /api/assessments
+    BE->>BE: requireConsentingPatient()
+    BE->>AI: POST /predict
+    AI->>AI: Predict. Top disease below threshold?
+    AI->>AI: Pick the most discriminating symptom
+    AI-->>BE: result + needs_follow_up=true + follow_up
+    BE-->>FE: result + needsFollowUp + followUp
+    FE-->>Patient: Show the yes/no question
+
+    loop until needsFollowUp = false
+        Patient->>FE: Answer yes or no
+        FE->>FE: Add the symptom, rounds++
+        FE->>BE: POST /api/assessments/followup
+        BE->>BE: requireConsentingPatient()
+        BE->>AI: POST /predict/followup
+        AI->>AI: Add the answer, predict again
+        alt confident, or no question, or round limit
+            AI-->>BE: result + needs_follow_up=false
+            BE-->>FE: final result
+            FE-->>Patient: Show the final result
+        else still below threshold
+            AI-->>BE: result + next follow_up
+            BE-->>FE: next question
+            FE-->>Patient: Show the next question
+        end
+    end
