@@ -449,6 +449,513 @@ The model (sequence, class and baseline-vs-refined diagrams), the API contract c
 model-to-code plan, the test plan, and the design of the AOP component (Part B, Personal Data
 Access Guard) are in **`iteration6/README.md`**.
 
+> The three iterations below are written in ASD Simplified Technical English (STE): short
+> sentences, active voice, present tense, and one instruction in each sentence. Iteration 7
+> (Health-data persistence, Java backend) stays a planned roadmap item. It is not yet done.
+> Iteration 9b comes after Iteration 9 so that it does not use the Iteration 7 number.
+
+## Iteration 8 — Prediction Service: Web Layer (Python)
+
+Status: **done**. This iteration puts an HTTP layer in front of the Iteration 1 pipeline. The
+Java backend can then call a real service. Before this iteration, the backend used a stub.
+
+### Step 1 — Requirements envisioning
+
+- Slice: show the pipeline on HTTP. The service predicts diseases. It maps free text to symptoms.
+  It checks red flags. It gives disease information.
+- Anchored to FR-P1 and FR-P2 (predict diseases from symptoms) and the SOA rule. The backend must
+  not run ML code. The backend calls the Python service.
+
+### Step 2 — Architecture / platform envisioning (SOA)
+
+- The web layer stays in the Prediction Service (Python). It does not go into the backend.
+- Use FastAPI. FastAPI gives input validation, dependency injection and an OpenAPI contract.
+- Inject the pipeline, the red-flag engine, the knowledge base and the specialty mapper with
+  `Depends`. Cache each one with `lru_cache`. The model loads one time for each process.
+
+### Endpoints
+
+| Operation | Function | Success | Error |
+| --- | --- | --- | --- |
+| `POST /predict` | Free text to ranked diseases, with descriptions, precautions, red flags and specialty | `200` | `422` if the text is empty |
+| `POST /map-symptoms` | Free text to structured symptom entries | `200` | `422` |
+| `POST /red-flags/check` | Active symptoms to red-flag rules and urgency | `200` | `422` |
+| `GET /diseases/{name}` | Description and precautions for one disease | `200` | `404` if the disease is unknown |
+| `GET /health`, `GET /ready` | Liveness and readiness for the container probes | `200` / `503` | — |
+
+### Step 3 — Model the slice
+
+**Structural model**
+
+```mermaid
+classDiagram
+    class FastAPIApp {
+        +POST /predict
+        +POST /predict/followup
+        +POST /map-symptoms
+        +POST /red-flags/check
+        +GET /diseases/{name}
+        +GET /health
+        +GET /ready
+    }
+    class PredictRequest {
+        +str text
+    }
+    class PredictResponse {
+        +PredictionItem[] predictions
+        +RedFlag[] redFlags
+        +Urgency urgency
+        +bool needs_follow_up
+        +FollowUp follow_up
+    }
+    class PredictionPipeline {
+        +predict(text) PredictionResult
+        +classifier
+    }
+    class RedFlagEngine {
+        +evaluate(active) RedFlag[]
+    }
+    class DiseaseKnowledgeBase {
+        +describe(disease)
+        +precautions(disease)
+    }
+    class SpecialtyMapper {
+        +specialty_for(disease)
+    }
+
+    FastAPIApp --> PredictRequest : validates
+    FastAPIApp --> PredictResponse : returns
+    FastAPIApp --> PredictionPipeline : get_pipeline (Depends)
+    FastAPIApp --> RedFlagEngine : get_red_flag_engine (Depends)
+    FastAPIApp --> DiseaseKnowledgeBase : get_knowledge (Depends)
+    FastAPIApp --> SpecialtyMapper : get_specialty_mapper (Depends)
+```
+
+**Baseline vs refined**
+
+```mermaid
+flowchart TB
+    subgraph BEFORE["Baseline (after Iteration 1)"]
+        direction TB
+        B1["SymptomParser and pipeline are Python classes"]
+        B2["No HTTP surface. The backend uses a stub"]:::problem
+    end
+    subgraph AFTER["Refined (Iteration 8)"]
+        direction TB
+        A1["FastAPI app wraps the pipeline"]
+        A2["POST /predict, /map-symptoms,<br/>/red-flags/check, GET /diseases/{name}"]
+        A3["pydantic validation, 422 on bad input"]
+        A4["Dependencies injected with Depends,<br/>cached with lru_cache"]
+        A1 --> A2 --> A3 --> A4
+    end
+    BEFORE ==>|"show the pipeline on HTTP so the backend calls a real service"| AFTER
+    classDef problem fill:#ffe0e0,stroke:#c0392b,color:#7b1e14;
+```
+
+The baseline from Iteration 1 was a pipeline of Python classes. It had no network surface. The
+backend could use only a stub. Iteration 8 adds a FastAPI app. The app wraps the pipeline and does
+not change it. The app adds validation and container probes.
+
+### Step 4 — Model-to-code transformation
+
+| Model element | Code element | File |
+| --- | --- | --- |
+| FastAPI app and routes | `app`, `predict`, `map_symptoms`, `red_flags_check`, `disease_info`, `health`, `ready` | `prediction_service/api.py` |
+| Request and response models | `PredictRequest`, `PredictResponse`, `MapSymptomsResponse`, `RedFlagCheckResponse`, `DiseaseInfoResponse` | `prediction_service/api.py` |
+| Pipeline dependency | `get_pipeline()`, env `DISEASE_MODEL_PATH` | `prediction_service/api.py`, `pipeline.py` |
+| Red-flag engine | `RedFlagEngine`, `RedFlagRule`, `Urgency` | `prediction_service/red_flags.py` |
+| Disease knowledge | `DiseaseKnowledgeBase` | `prediction_service/knowledge.py` |
+| Specialty mapping (FR-P4) | `SpecialtyMapper` | `prediction_service/specialty.py` |
+
+### Step 5 — Validate / test
+
+The test suite passes. It has 166 tests on Python 3.12.10. The API tests (`test_api.py`) have 23
+tests. The red-flag tests (`test_red_flags.py`) have 7 tests. The knowledge tests
+(`test_knowledge.py`) have 6 tests. The API tests call each endpoint with the FastAPI `TestClient`.
+
+### Step 6 — Review & refine the model
+
+1. The dependencies are cached, not global. `lru_cache` loads the model one time for each process.
+   `Depends` keeps the endpoints easy to test.
+2. There are two probes. `/health` is liveness. `/ready` reports if the model is loaded.
+3. The red-flag check is deterministic. It runs next to the prediction. It is not a diagnosis.
+4. The follow-up endpoint is added later (Iteration 9b). It reuses this app. For this reason,
+   `PredictResponse` already carries `needs_follow_up` and `follow_up`.
+
+## Iteration 9 — ML Pipeline: Trained Classifier (Python)
+
+Status: **done**. This iteration fills the Iteration 0 Strategy and Factory skeleton. It adds
+trained, calibrated classifier models. The `/predict` endpoint now gives real ranked diseases.
+Before this iteration, the pipeline gave a stub result.
+
+### Step 1 — Requirements envisioning
+
+- Slice: train classifiers on the Kaggle dataset. Calibrate the best model. Save it. Serve ranked
+  diseases with explanations and a specialty.
+- Anchored to FR-P2 (ranked probabilities), FR-P4 (specialty routing) and NFR-2 (anonymise the
+  training data).
+
+### Step 2 — Architecture / platform envisioning (SOA)
+
+- All of this stays in the Prediction Service (Python).
+- Keep the Iteration 0 patterns. Strategy holds the interchangeable classifier algorithms.
+  Factory builds each strategy.
+- Train the models offline in `train.py`. The API loads a saved model at request time. The heavy
+  training does not run in the request path.
+
+### Classifier strategies
+
+| Strategy | Estimator |
+| --- | --- |
+| `RandomForestStrategy` | random forest |
+| `KNNStrategy` | k-nearest neighbours |
+| `DecisionTreeStrategy` | decision tree |
+| `NaiveBayesStrategy` | naive Bayes |
+| `CalibratedStrategy` | wraps the best strategy in `CalibratedClassifierCV` |
+
+### Step 3 — Model the slice
+
+**Structural model**
+
+```mermaid
+classDiagram
+    class ClassifierStrategy {
+        +classify(entries) DiseasePrediction[]
+    }
+    class SklearnStrategy {
+        +fit(features, labels)
+        +with_explanations(gen) SklearnStrategy
+    }
+    class RandomForestStrategy
+    class KNNStrategy
+    class DecisionTreeStrategy
+    class NaiveBayesStrategy
+    class CalibratedStrategy
+    class DiseaseClassifier {
+        +predict(entries) DiseasePrediction[]
+    }
+    class ModelFactory {
+        +create_classifier() ClassifierStrategy
+    }
+    class ExplanationGenerator {
+        +explain(vector, estimator, class) Explanation
+    }
+    class SpecialtyMapper {
+        +specialty_for(disease) str
+    }
+    class ModelStore {
+        +save(strategy, metadata) version
+        +load_active() SklearnStrategy
+    }
+
+    SklearnStrategy ..|> ClassifierStrategy
+    RandomForestStrategy --|> SklearnStrategy
+    KNNStrategy --|> SklearnStrategy
+    DecisionTreeStrategy --|> SklearnStrategy
+    NaiveBayesStrategy --|> SklearnStrategy
+    CalibratedStrategy --|> SklearnStrategy
+    DiseaseClassifier --> ClassifierStrategy : wraps
+    ModelFactory ..> ClassifierStrategy : creates
+    SklearnStrategy --> ExplanationGenerator : optional
+    ModelStore ..> SklearnStrategy : persists (joblib)
+```
+
+**Training flow**
+
+```mermaid
+flowchart TD
+    DS["dataset.csv (Kaggle)"] --> AN["anonymize: scrub ids and free text (NFR-2)"]
+    AN --> FE["encode_entries: severity-weighted vectors"]
+    FE --> TR["train.py: fit every strategy"]
+    TR --> BEST["pick the best strategy"]
+    BEST --> CAL["CalibratedStrategy: CalibratedClassifierCV"]
+    CAL --> SAVE["save best.joblib and a manifest"]
+    SAVE --> STORE["ModelStore: version, metadata, mark active"]
+    STORE --> LOAD["API loads the active model"]
+    LOAD --> CLF["DiseaseClassifier.predict(entries)"]
+    CLF --> EXP["ExplanationGenerator: per-symptom weights"]
+```
+
+**Baseline vs refined**
+
+```mermaid
+flowchart TB
+    subgraph BEFORE["Baseline (Iteration 0 skeleton)"]
+        direction TB
+        B1["Strategy and Factory are declarations"]:::missing
+        B2["The pipeline returns a stub result"]:::problem
+    end
+    subgraph AFTER["Refined (Iteration 9)"]
+        direction TB
+        A1["Concrete strategies: RandomForest, KNN,<br/>DecisionTree, NaiveBayes"]
+        A2["ModelFactory for each strategy"]
+        A3["CalibratedStrategy for correct probabilities"]
+        A4["ModelStore, joblib persistence, manifest"]
+        A5["ExplanationGenerator, SpecialtyMapper, anonymize"]
+        A1 --> A2 --> A3 --> A4 --> A5
+    end
+    BEFORE ==>|"fill the skeleton with trained, calibrated, explainable models"| AFTER
+    classDef missing stroke-dasharray: 5 5,color:#999,stroke:#999;
+    classDef problem fill:#ffe0e0,stroke:#c0392b,color:#7b1e14;
+```
+
+Iteration 0 left Strategy and Factory as declarations with a stub. Iteration 9 makes them real. It
+adds concrete strategies, a factory for each strategy, a calibration wrapper, a model registry with
+provenance, explanations, and the FR-P4 specialty mapper. It anonymises the training data first.
+
+### Step 4 — Model-to-code transformation
+
+| Model element | Code element | File |
+| --- | --- | --- |
+| Strategy interface and base | `ClassifierStrategy`, `SklearnStrategy` | `prediction_service/classifier.py` |
+| Concrete strategies | `RandomForestStrategy`, `KNNStrategy`, `DecisionTreeStrategy`, `NaiveBayesStrategy` | `prediction_service/classifier.py` |
+| Calibration | `CalibratedStrategy` (`CalibratedClassifierCV`) | `prediction_service/classifier.py` |
+| Factory | `ModelFactory` and the four concrete factories | `prediction_service/factory.py` |
+| Classifier wrapper | `DiseaseClassifier` | `prediction_service/classifier.py` |
+| Feature encoding | `encode_entries` | `prediction_service/features.py` |
+| Explanations | `ExplanationGenerator`, `Explanation` | `prediction_service/explanation.py` |
+| Specialty mapping (FR-P4) | `SpecialtyMapper` | `prediction_service/specialty.py` |
+| Model registry and persistence | `ModelStore`, `save_strategy`, `load_strategy` | `prediction_service/persistence.py` |
+| Provenance manifest | `write_model_manifest`, `verify_model_artifact` | `prediction_service/artifact.py` |
+| Training script | `train.py` | `prediction_service/train.py` |
+| Anonymisation (NFR-2) | `anonymize_entries`, `scrub_text`, `pseudonymize_id` | `prediction_service/anonymize.py` |
+
+### Step 5 — Validate / test
+
+The test suite passes. It has 166 tests. The classifier tests have 20 tests. The calibration tests
+have 8 tests. The explanation tests have 8 tests. The specialty tests have 6 tests. The persistence
+tests have 11 tests. The training tests have 6 tests. The anonymise tests have 12 tests.
+
+### Step 6 — Review & refine the model
+
+1. Calibration is a strategy, not a special case. `CalibratedStrategy` subclasses `SklearnStrategy`.
+   The API loads it and calls it like any other strategy.
+2. The project uses `joblib`, not `pickle`. scikit-learn models hold large NumPy arrays. `joblib`
+   saves them well. The loader still reads the old `.pkl` files.
+3. The manifest travels with the model. It records the artifact hash, the data hash, the strategy,
+   the scores and the runtime.
+4. The explanation code unwraps the calibration wrapper. It then reads the feature importances or
+   the coefficients. Only the active symptoms can contribute.
+5. The project anonymises the data before training (NFR-2). It hashes the `entry_id`. It scrubs the
+   free text.
+
+## Iteration 9b — Adaptive Follow-up Questions (AI + backend + React, FR-P3)
+
+Status: **done**. This iteration adds a follow-up loop across the three services. When a
+prediction is not confident, the service asks the patient one yes/no question. The service adds
+the answer and predicts again. This iteration comes after Iteration 9. It does not use the
+Iteration 7 number.
+
+### Step 1 — Requirements envisioning
+
+- Slice: for a prediction that is not confident, ask one yes/no question. The question is about the
+  symptom that best separates the top disease from the next disease. Add the answer. Predict again.
+  Stop when the prediction is confident.
+- Anchored to FR-P3 (follow-up questions to refine a prediction).
+- Out of scope: free-text answers. The service accepts only yes or no. The server keeps no session
+  state. The client carries the symptom sets between turns.
+
+### Step 2 — Architecture / platform envisioning (SOA)
+
+The feature uses all three services. Each service keeps its role:
+
+- **AI (Python):** selects the question. Decides when to stop. It keeps no state. The caller sends
+  the confirmed and denied symptoms for each turn.
+- **Backend (Java):** adds one endpoint with the consent check. It relays the loop to the AI
+  service. It adds no ML logic.
+- **Frontend (React):** runs the loop in the UI. It collects the symptom sets across the turns. It
+  gives only the final confident result to the page.
+
+### How the loop works
+
+1. A normal prediction runs (`POST /predict`).
+2. The top disease is below the confidence threshold (default 0.80). The AI selects the symptom
+   that is frequent in the top disease and rare in the next disease. It returns this symptom as a
+   yes/no question.
+3. The patient answers. The service adds the symptom to the confirmed set or the denied set.
+4. `POST /predict/followup` adds the answer and predicts again. It reuses the trained model. It
+   does not run the NLP stage again.
+5. The loop stops for one of three reasons: the confidence reaches the threshold; no useful
+   question remains; the loop reaches the round limit. The round limit makes sure that the loop
+   always stops.
+
+**Structural model**
+
+```mermaid
+classDiagram
+    namespace PredictionService_Python {
+        class SymptomAssociationIndex {
+            +most_discriminating(top, runner_up, asked) str
+        }
+        class FollowUpService {
+            +continue_loop(confirmed, denied, answer) PredictResponse
+        }
+        class FastAPIApp {
+            +POST /predict
+            +POST /predict/followup
+        }
+    }
+    namespace Backend_Java {
+        class AssessmentController {
+            +submitFollowup(FollowupRequest) AssessmentResponse
+        }
+        class AssessmentApiService {
+            +continueAssessment(FollowupRequest) AssessmentResponse
+        }
+        class PredictionClient {
+            +predictFollowUp(confirmed, denied, rounds) PredictionResult
+        }
+        class ProfileService {
+            +requireConsentingPatient() Patient
+        }
+    }
+    namespace Frontend_React {
+        class AssessmentPage
+        class FollowUpQuestion {
+            +yes / no
+        }
+        class useAssessment {
+            +answerFollowUp(present)
+        }
+        class HttpAssessmentApiClient {
+            +submitFollowUp(FollowUpRequest) PredictionResult
+        }
+    }
+
+    FastAPIApp --> FollowUpService : /predict/followup
+    FollowUpService --> SymptomAssociationIndex : pick question
+    AssessmentController --> AssessmentApiService
+    AssessmentApiService --> ProfileService : consent gate
+    AssessmentApiService --> PredictionClient
+    PredictionClient --> FastAPIApp : POST /predict/followup
+    AssessmentPage --> FollowUpQuestion
+    AssessmentPage --> useAssessment
+    useAssessment --> HttpAssessmentApiClient
+    HttpAssessmentApiClient --> AssessmentController : POST /api/assessments/followup
+```
+
+**Sequence**
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Patient
+    participant FE as Web App (React)
+    participant BE as Backend (Spring Boot)
+    participant AI as Prediction Service (Python)
+
+    Patient->>FE: Describe symptoms, submit
+    FE->>BE: POST /api/assessments
+    BE->>BE: requireConsentingPatient()
+    BE->>AI: POST /predict
+    AI->>AI: Predict. Top disease below threshold?
+    AI->>AI: Pick the most discriminating symptom
+    AI-->>BE: result + needs_follow_up=true + follow_up
+    BE-->>FE: result + needsFollowUp + followUp
+    FE-->>Patient: Show the yes/no question
+
+    loop until needsFollowUp = false
+        Patient->>FE: Answer yes or no
+        FE->>FE: Add the symptom, rounds++
+        FE->>BE: POST /api/assessments/followup
+        BE->>BE: requireConsentingPatient()
+        BE->>AI: POST /predict/followup
+        AI->>AI: Add the answer, predict again
+        alt confident, or no question, or round limit
+            AI-->>BE: result + needs_follow_up=false
+            BE-->>FE: final result
+            FE-->>Patient: Show the final result
+        else still below threshold
+            AI-->>BE: result + next follow_up
+            BE-->>FE: next question
+            FE-->>Patient: Show the next question
+        end
+    end
+```
+
+**Baseline vs refined**
+
+```mermaid
+flowchart TB
+    subgraph BEFORE["Baseline (after Iterations 8 and 9)"]
+        direction TB
+        B1["One-shot /predict: symptoms in, diseases out"]
+        B2["A vague description gives low confidence.<br/>There is no way to ask for more"]:::problem
+    end
+    subgraph AFTER["Refined (Iteration 9b, FR-P3)"]
+        direction TB
+        A1["The AI asks the most discriminating<br/>symptom as a yes/no question"]
+        A2["POST /predict/followup adds the answer<br/>and predicts again (stateless, round limit)"]
+        A3["The backend adds a consent-gated endpoint"]
+        A4["React runs the loop and shows only<br/>the final result"]
+        A1 --> A2 --> A3 --> A4
+    end
+    BEFORE ==>|"add a yes/no loop across AI, backend and frontend"| AFTER
+    classDef problem fill:#ffe0e0,stroke:#c0392b,color:#7b1e14;
+```
+
+### Step 4 — Model-to-code transformation (by repository)
+
+**AI (`disease-prediction-ai`, branch `feat/adaptive-followup-questions`)**
+
+- `associations.py` — `SymptomAssociationIndex` learns the symptom frequency for each disease. It
+  selects the most discriminating symptom that the patient has not answered.
+- `followup.py` — `FollowUpService` runs the loop. It uses the confidence threshold and the round
+  limit.
+- `api.py` — `/predict` returns `needs_follow_up` and `follow_up`. The new `POST /predict/followup`
+  continues the loop from the carried symptoms and the latest answer.
+- `pipeline.py` — exposes the trained classifier so the loop re-ranks without the NLP stage.
+- Configuration: `DISEASE_FOLLOWUP_THRESHOLD`, `DISEASE_FOLLOWUP_MAX_ROUNDS`, `DISEASE_DATASET_PATH`.
+
+**Backend (`disease-prediction-be`, branch `feat/adaptive-followup`)**
+
+- `assessment-api.yaml` — adds `POST /api/assessments/followup`. Adds the `FollowupRequest`,
+  `FollowupAnswer` and `FollowUp` schemas. Adds `activeSymptoms`, `needsFollowUp` and `followUp`
+  to `PredictionResult`.
+- `PredictionClient` / `HttpPredictionClient` — add `predictFollowUp(...)`. It posts to the AI
+  `/predict/followup`.
+- `AssessmentApiService.continueAssessment(...)` — puts the yes/no answer into the confirmed set or
+  the denied set. It calls `requireConsentingPatient()` first, like `runAssessment`.
+- `AssessmentController.submitFollowup(...)` — a thin delegate.
+
+**Frontend (`disease-prediction-fe`, branch `feat/adaptive-followup`)**
+
+- `domain/assessment.ts` — adds the `FollowUp`, `FollowUpAnswer` and `FollowUpRequest` types. Adds
+  `activeSymptoms`, `needsFollowUp` and `followUp` to `PredictionResult`. These fields are optional.
+- `HttpAssessmentApiClient` — adds `submitFollowUp(...)`. It posts to `/api/assessments/followup`.
+- `useAssessment.answerFollowUp(present)` — collects the confirmed and denied symptoms and the
+  round count across the turns.
+- `FollowUpQuestion` and `AssessmentPage` — show the yes/no question and run the loop in the page.
+  The page gives only the final confident result to the host.
+- Same branch: the symptom checklist now covers the full canonical vocabulary (131 symptoms) in
+  clinical groups. It replaces the earlier subset.
+
+### Step 5 — Validate / test
+
+| Service | Scope | Result |
+| --- | --- | --- |
+| AI (Python 3.12.10) | association index (6), follow-up loop (9), endpoints in `test_api.py` (23) | full suite 166 tests pass |
+| Backend (JDK 25) | the client maps the new fields and posts to `/predict/followup`; the service merges answers and counts rounds; the controller returns 200 / 400 | full suite 16 tests pass |
+| Frontend | client method and error mapping, hook loop, `FollowUpQuestion` component, one integration test | 157 tests pass (113 unit + 44 integration) |
+
+The AI tests confirm that the loop stops: the confidence rises past the threshold; the service does
+not ask a denied symptom again; the round limit stops the loop.
+
+### Step 6 — Review & refine the model
+
+1. The loop keeps no state on the server. The client carries the confirmed symptoms, the denied
+   symptoms and the round count. Both services stay stateless. Both services scale horizontally.
+2. The service selects a discriminating question, not only a frequent symptom. Each answer gives
+   more information. The loop needs fewer questions.
+3. The loop always stops. There are three reasons: the confidence reaches the threshold; no useful
+   question remains; the loop reaches the round limit.
+4. The service checks consent for each turn. `continueAssessment` calls `requireConsentingPatient()`,
+   like `runAssessment`. A follow-up answer cannot pass the Iteration 6 consent check.
+5. The UI shows only the final result. `AssessmentPage` runs the loop in the page. It does not show
+   the intermediate results.
+6. The same branch fixes an authentication race. A protected call could run before the Hanko token
+   was ready. This caused a wrong 401. The fetch now waits for the token.
+
 ## Coordinator & team notes
 
 - Coordinator: `<fill in name>` — tracks who did what and negotiates per-member points (Lab05

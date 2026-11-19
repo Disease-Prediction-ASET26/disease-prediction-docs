@@ -14,4 +14,9 @@ keeps the editable source. See `MDD_ITERATIONS.md` and `MDD_ITERATIONS_FE_PLAN.m
 | 6 — Identity and login with Hanko (Java backend + React), plus the AOP access guard (Part B) | `iteration6/` | `login_sequence`, `identity_class`, `baseline_vs_refined`, `access_guard_class` |
 | Roadmap — planned iterations 5–13 | `roadmap/` | `roadmap.png` |
 
+Iteration 7 (Health-data persistence, Java backend) remains a planned roadmap item. Iterations 8,
+9 and 9b are documented in full (text and embedded Mermaid diagrams) in `MDD_ITERATIONS.md`; they
+have no separate folder. Iteration 9b is a cross-service feature placed after Iteration 9 so it
+does not take Iteration 7's number.
+
 To edit a diagram, update its `.mmd` source and the matching Mermaid block in the related page.
