@@ -930,6 +930,22 @@ flowchart TB
 - Same branch: the symptom checklist now covers the full canonical vocabulary (131 symptoms) in
   clinical groups. It replaces the earlier subset.
 
+### Later refinement — top condition with precautions (branch `feat/top-disease-with-precautions`)
+
+A follow-up change on top of this iteration narrows what the result view shows and surfaces the
+disease precautions, which were already produced by the AI but dropped before reaching the patient.
+
+- **AI (`disease-prediction-ai`):** no change. The `/predict` response already carries a
+  `description` and `precautions` for each disease, loaded by `DiseaseKnowledgeBase` from
+  `data/symptom_Description.csv` and `data/symptom_precaution.csv`.
+- **Backend (`disease-prediction-be`):** `assessment-api.yaml` adds `description` and `precautions`
+  to the `DiseasePrediction` schema; `HttpPredictionClient` now maps both fields from the AI
+  response instead of discarding them.
+- **Frontend (`disease-prediction-fe`):** `domain/assessment.ts` adds optional `description` and
+  `precautions` to `DiseasePrediction`. `PredictionResultView` shows only the single most likely
+  condition — its probability, description, contributing symptoms and recommended precautions —
+  rather than the full ranked list. The backend still requests the top five.
+
 ### Step 5 — Validate / test
 
 | Service | Scope | Result |
@@ -955,6 +971,10 @@ not ask a denied symptom again; the round limit stops the loop.
    the intermediate results.
 6. The same branch fixes an authentication race. A protected call could run before the Hanko token
    was ready. This caused a wrong 401. The fetch now waits for the token.
+7. The result view shows only the top condition, with precautions. The ranked list was replaced by
+   the single most likely disease plus its description, contributing symptoms and precautions. The
+   precautions already existed in the AI response; the backend had been dropping them, so the fix
+   was to relay the field (backend) and render it (frontend), not to produce new data.
 
 ## Coordinator & team notes
 
