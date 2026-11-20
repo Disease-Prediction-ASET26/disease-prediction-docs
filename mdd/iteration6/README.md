@@ -622,8 +622,9 @@ rollback, no personal data in events. Integration tests with Testcontainers: the
 - **Status:** consent and audit implemented. Ownership and the denial monitor are not built yet.
 - **Code:** `disease-prediction-be`, branch `feat/aop-access-guard`,
   [PR #84](https://github.com/Disease-Prediction-ASET26/disease-prediction-be/pull/84). Package
-  `com.diseaseprediction.security.access`, migration `V3__create_access_audit_events.sql`, and
-  `docs/access-guard.md` (component guide and the AI-tool usage the lab asks for).
+  `com.diseaseprediction.security.access` and migration `V3__create_access_audit_events.sql`. The
+  backend README has a short usage note; the AI-tool usage the lab asks for is at the end of this
+  page.
 
 | Class | Role |
 | --- | --- |
@@ -732,3 +733,68 @@ sequenceDiagram
 - By hand on the local stack: onboarding, consent changes and assessments produced the expected
   rows (`ALLOWED`, `DENIED email-not-verified`, `FAILED profile-not-found`, `FAILED` when the
   prediction service was down).
+
+#### Use of AI tools
+
+- **Tool:** Kiro IDE (agent mode).
+- **Model:** Claude Opus 5.5.
+- **Date:** 2026-11-20.
+
+The design above (Part B) was written earlier. The prompts below are the implementation session,
+in order, with the assistant's answers summarised. Prompts are quoted as typed.
+
+1. > Problem 2 [15 points] – optional – lab 9. Implement a component for security or for analysis
+   > of SQL statements or for caching or for debugging or for wacky using AOP. [...] i remember
+   > talkin about this, to do a feature, can you reminde be what aspect we will do?
+
+   The assistant found this Part B design and summarised it: the audit, consent and ownership
+   aspects, the audit trail, the append-only table and the denial monitor. It noted that no code
+   existed yet.
+
+2. > but dont we already have a check about consent?
+
+   The assistant confirmed that `ProfileService.requireConsentingPatient()` exists and is called
+   directly by `runAssessment` and `continueAssessment`, and that the design meant the aspect to
+   replace those calls. It pointed out that the audit must treat a 403 `ApiProblemException` as a
+   denial, not only `AccessDeniedException`.
+
+3. > ok, so lets replace them with the aspects
+
+   The assistant implemented the consent and audit parts on branch `feat/aop-access-guard`, with
+   the migration and the tests. It left out ownership and the denial monitor, because no endpoint
+   reads a stored record yet. Two integration tests first failed: Spring Security refuses
+   non-patients on `POST /api/assessments` before any aspect runs. The tests were moved to the
+   follow-up endpoint and the gap is listed under "Limits".
+
+4. > can you do a diagram of this work, to understand better?
+
+   The assistant drew a class diagram and the request sequence (`access_guard_sequence.mmd`).
+
+5. > so what this audit is checking, when we the assesment , the audit make sure we have consent?
+
+   > can you explain what every class from acces is doing?
+
+   Explanations only: the consent aspect decides, the audit only records. No code changed.
+
+6. > please cover all
+
+   Sent with a JaCoCo screenshot showing `AccessVerdict` at 84% instructions and 64% branches.
+   The assistant added `AccessVerdictTest` and made the hidden `null` branch of the `switch`
+   explicit (`case null -> FAILED`). Coverage of `security/access` became 100%.
+
+7. > lets open a pr on this, and also make sure this is documented in the docs,
+
+   > why we have docs in be? the dosc are only in the repo docs, we can andd more relevant info in
+   > the read me
+
+   > delete this rhe commner only
+
+   The assistant opened backend PR #84 and this docs PR, moved the component notes and this AI
+   section from a backend `docs/` file into this page, added a short section to the backend
+   README, and removed a comment it had added in `pom.xml`.
+
+**How the output was used.** The code, migration, tests, diagrams and these notes were generated
+by the assistant in that session and reviewed by the team member. The changes made against the
+design are listed in "Changes from the design".
+
+[Team: record your own review and any changes you make after this session here.]
