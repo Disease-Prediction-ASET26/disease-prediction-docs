@@ -11,7 +11,7 @@ keeps the editable source. See `MDD_ITERATIONS.md` and `MDD_ITERATIONS_FE_PLAN.m
 | 3 — Patient Web App: prediction feature (React) | `iteration3/` | `assessment_feature_class`, `assessment_feature_flow`, `baseline_vs_refined` |
 | 4 — Patient Web App: client-side routing (React) | `iteration4/` | `routing_class`, `routing_flow`, `baseline_vs_refined` |
 | 5 — User and consent persistence (Java backend) | `iteration5/` | `user_consent_er`, `user_persistence_class`, `baseline_vs_refined` |
-| 6 — Identity and login with Hanko (Java backend + React), plus the AOP access guard (Part B) | `iteration6/` | `login_sequence`, `identity_class`, `baseline_vs_refined`, `access_guard_class` |
+| 6 — Identity and login with Hanko (Java backend + React), plus the AOP access guard (Part B) | `iteration6/` | `login_sequence`, `identity_class`, `baseline_vs_refined`, `access_guard_class`, `access_guard_sequence` |
 | 8 — Prediction Service: web layer (Python) | `iteration8/` | `web_layer_class`, `baseline_vs_refined` |
 | 9 — ML pipeline: trained classifier (Python) | `iteration9/` | `classifier_class`, `training_flow`, `baseline_vs_refined` |
 | 9b — Adaptive follow-up questions (AI + backend + React) | `iteration9b/` | `followup_class`, `followup_sequence`, `baseline_vs_refined` |

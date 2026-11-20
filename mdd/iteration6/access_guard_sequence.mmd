@@ -1,0 +1,42 @@
+sequenceDiagram
+    autonumber
+    actor P as Patient
+    participant SEC as Spring Security filters
+    participant C as AssessmentController
+    participant AUD as AccessAuditAspect (order 1)
+    participant CON as ConsentAspect (order 2)
+    participant PS as ProfileService
+    participant S as AssessmentApiService.runAssessment
+    participant AT as AuditTrail (own transaction)
+    participant DB as access_audit_events
+
+    P->>SEC: POST /api/assessments + Hanko token
+    alt no token, or not a patient
+        SEC-->>P: 401 / 403 (never reaches the aspects, not audited)
+    end
+    SEC->>C: authenticated patient
+    C->>AUD: runAssessment(request)
+    AUD->>CON: proceed()
+    CON->>PS: requireConsentingPatient()
+    alt no consent / no verified email
+        PS-->>CON: ApiProblemException 403 consent-required
+        CON-->>AUD: exception
+        AUD->>AT: record(CREATE, ASSESSMENT, DENIED, "consent-required")
+        AT->>DB: INSERT
+        AUD-->>P: 403 consent-required
+    else consent active
+        PS-->>CON: ok
+        CON->>S: method body runs
+        alt invalid input or prediction service down
+            S-->>AUD: exception
+            AUD->>AT: record(..., FAILED, "InvalidAssessmentRequestException")
+            AT->>DB: INSERT
+            AUD-->>P: 400 / 503
+        else success
+            S-->>AUD: AssessmentResponse
+            AUD->>AT: record(CREATE, ASSESSMENT, ALLOWED, null)
+            AT->>DB: INSERT
+            AUD-->>P: 200 prediction
+        end
+    end
+    Note over AT,DB: If the INSERT fails, the error is only logged.<br/>The patient still gets the normal response.
