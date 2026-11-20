@@ -13,7 +13,8 @@ first-login onboarding step creates the patient profile and records consent.
 - **Code:** one branch per repository, each with a PR (see Step 4).
 - **Status:** designed. Steps 5 and 6 are filled in after implementation.
 - **Part B (separate deliverable):** the AOP component, "Personal Data Access Guard", builds on
-  this iteration. Its design is at the end of this page.
+  this iteration. Its design and implementation (consent and audit aspects, backend PR #84) are at
+  the end of this page.
 
 > Render the `.mmd` files with the VS Code *Markdown Preview Mermaid* extension, IntelliJ's
 > Mermaid plugin, or by pasting into <https://mermaid.live>. GitHub renders the fenced
@@ -615,3 +616,119 @@ rollback, no personal data in events. Integration tests with Testcontainers: the
   (pseudonymous, no foreign key) for a fixed retention period, or delete them with the account.
   To decide before Iteration 7.
 - **Who can read the audit trail.** An admin endpoint, or database access only.
+
+### Implementation (Lab 9)
+
+- **Status:** consent and audit implemented. Ownership and the denial monitor are not built yet.
+- **Code:** `disease-prediction-be`, branch `feat/aop-access-guard`,
+  [PR #84](https://github.com/Disease-Prediction-ASET26/disease-prediction-be/pull/84). Package
+  `com.diseaseprediction.security.access`, migration `V3__create_access_audit_events.sql`, and
+  `docs/access-guard.md` (component guide and the AI-tool usage the lab asks for).
+
+| Class | Role |
+| --- | --- |
+| `RequiresActiveConsent` | Marker annotation: only a consenting patient may call the method. |
+| `AuditedAccess` | Annotation with `action` and `resource`: record every call. |
+| `ConsentAspect` | `@Before`, order 2. Calls `ProfileService.requireConsentingPatient()`. |
+| `AccessAuditAspect` | `@Around`, order 1. Records the outcome, then returns or rethrows unchanged. |
+| `AccessGuardOrder` | The order constants: audit 1, consent 2. |
+| `AccessVerdict` | Maps an exception to `DENIED` (any 401/403) or `FAILED`, plus a reason code. |
+| `AuditTrail` | Saves an `AccessAuditEvent` in its own transaction (`REQUIRES_NEW`). |
+
+#### Request flow (`access_guard_sequence.mmd`)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor P as Patient
+    participant SEC as Spring Security filters
+    participant C as AssessmentController
+    participant AUD as AccessAuditAspect (order 1)
+    participant CON as ConsentAspect (order 2)
+    participant PS as ProfileService
+    participant S as AssessmentApiService.runAssessment
+    participant AT as AuditTrail (own transaction)
+    participant DB as access_audit_events
+
+    P->>SEC: POST /api/assessments + Hanko token
+    alt no token, or not a patient
+        SEC-->>P: 401 / 403 (never reaches the aspects, not audited)
+    end
+    SEC->>C: authenticated patient
+    C->>AUD: runAssessment(request)
+    AUD->>CON: proceed()
+    CON->>PS: requireConsentingPatient()
+    alt no consent / no verified email
+        PS-->>CON: ApiProblemException 403 consent-required
+        CON-->>AUD: exception
+        AUD->>AT: record(CREATE, ASSESSMENT, DENIED, "consent-required")
+        AT->>DB: INSERT
+        AUD-->>P: 403 consent-required
+    else consent active
+        PS-->>CON: ok
+        CON->>S: method body runs
+        alt invalid input or prediction service down
+            S-->>AUD: exception
+            AUD->>AT: record(..., FAILED, "InvalidAssessmentRequestException")
+            AT->>DB: INSERT
+            AUD-->>P: 400 / 503
+        else success
+            S-->>AUD: AssessmentResponse
+            AUD->>AT: record(CREATE, ASSESSMENT, ALLOWED, null)
+            AT->>DB: INSERT
+            AUD-->>P: 200 prediction
+        end
+    end
+    Note over AT,DB: If the INSERT fails, the error is only logged.<br/>The patient still gets the normal response.
+```
+
+#### Where it is used
+
+| Method | Annotations |
+| --- | --- |
+| `ProfileService.getProfile` | `@AuditedAccess(READ, PATIENT_PROFILE)` |
+| `ProfileService.createPatientProfile` | `@AuditedAccess(CREATE, PATIENT_PROFILE)` |
+| `ProfileService.recordConsent` | `@AuditedAccess(UPDATE, CONSENT)` |
+| `AssessmentApiService.runAssessment` | `@AuditedAccess(CREATE, ASSESSMENT)`, `@RequiresActiveConsent` |
+| `AssessmentApiService.continueAssessment` | `@AuditedAccess(UPDATE, ASSESSMENT)`, `@RequiresActiveConsent` |
+
+#### Changes from the design
+
+- The annotations are on service methods, not controller methods: the backend keeps rules in
+  the service layer. `createPatientProfile` and `continueAssessment` are audited too.
+- `ConsentAspect` reuses `ProfileService.requireConsentingPatient()`, so the problem codes from
+  Iteration 6 do not change. The direct calls in `AssessmentApiService` are removed.
+- The audit counts every 401/403 as `DENIED`, including `ApiProblemException`, not only
+  `AccessDeniedException`.
+- A failed audit write is logged and does not change the response: the guarded method has already
+  committed by then.
+- The append-only triggers also reject `TRUNCATE`.
+- No request id is stored: the backend has no request-id mechanism yet.
+- `@AuditedAccess` has no `resourceId` yet; the column exists and stays empty until ownership is
+  built.
+
+#### Limits
+
+- Requests that Spring Security refuses in the filter chain (no token, or a non-patient on
+  `POST /api/assessments` and `POST /api/me/consents`) never reach the services, so they are not
+  audited.
+- The frontend route guard `RequirePatientConsent` hides the assessment form without consent, so
+  in the browser the backend refusal is only reached with a stale page or a direct API call. The
+  frontend guard is for the user; the aspect is the security rule.
+- Not built: `@OwnedResource` with `OwnershipResolver` (needs stored assessments and
+  `GET /api/assessments/{id}`, Iteration 7) and `DeniedAccessMonitor` (stretch goal).
+
+#### Validation
+
+`./mvnw clean test`: 106 tests pass. JaCoCo shows 100% instruction and branch coverage for
+`security/access`.
+
+- `AccessGuardAspectsTest`: the aspects woven by Spring AOP around a test bean. Order, each
+  outcome, and audit failures that change neither a result nor a refusal.
+- `AccessVerdictTest`: every outcome and reason-code branch.
+- `AccessAuditIntegrationTest`: real security chain and PostgreSQL. The rows of a whole patient
+  session, consent and role denials, callers without a profile, no personal data in rows, a
+  denial kept after a rollback, and the append-only triggers.
+- By hand on the local stack: onboarding, consent changes and assessments produced the expected
+  rows (`ALLOWED`, `DENIED email-not-verified`, `FAILED profile-not-found`, `FAILED` when the
+  prediction service was down).

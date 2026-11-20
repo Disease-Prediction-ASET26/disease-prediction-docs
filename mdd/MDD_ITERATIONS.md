@@ -1293,7 +1293,7 @@ The diagram sources are in `iteration9c/`.
   - Iteration 4 — Patient Web App: client-side routing (React Router) — `<owner>` (planned; see `MDD_ITERATIONS_FE_PLAN.md`, Part 2)
   - Iteration 5 — User and consent persistence (Java backend) — `<owner>` (implemented; see `iteration5/README.md`)
   - Iteration 6 — Identity and login with Hanko (Java backend + React) — `<owner>` (designed; see `iteration6/README.md`)
-  - AOP component — Personal Data Access Guard (Java backend) — Daria (designed; see `iteration6/README.md`, Part B)
+  - AOP component — Personal Data Access Guard (Java backend) — Daria (consent and audit aspects implemented, backend PR #84; see `iteration6/README.md`, Part B)
 - Repository / process (Lab05 Theme 2 — GitHub): GitFlow branching (main ← develop ← feature
   branches), CI pipeline (lint, build, secret scan, OWASP dependency scan, SonarQube gate,
   containerize), and pre-commit hooks (ruff + hygiene). Process/DevOps evidence for the GitHub
