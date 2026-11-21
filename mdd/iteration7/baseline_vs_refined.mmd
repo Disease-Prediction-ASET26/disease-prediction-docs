@@ -1,0 +1,38 @@
+%% MDD Iteration 7 - Baseline (Iteration 2 analysis classes) vs refined (stored aggregate).
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+classDiagram
+    direction LR
+    namespace Baseline {
+        class Assessment {
+            <<plain class, Iteration 2>>
+            -UUID assessmentId
+            -String freeTextDescription
+            -List~SymptomEntry~ symptomEntries
+            -PredictionResult result
+        }
+        class Report {
+            <<plain class>>
+            -ReportStatus status
+            -String clinicalNotes
+            +send(Doctor)
+        }
+    }
+    namespace Refined {
+        class StoredAssessment {
+            <<@Entity, encrypted JSON columns>>
+            -Patient patient
+            -AssessmentStatus status
+            -String input
+            -String followUpState
+            -String result
+            -long version
+        }
+        class StoredReport {
+            <<@Entity, status DRAFT for now>>
+            -ReportStatus status
+            -Doctor doctor
+            -String clinicalNotes
+        }
+    }
+    Assessment --> Report
+    StoredAssessment *-- StoredReport

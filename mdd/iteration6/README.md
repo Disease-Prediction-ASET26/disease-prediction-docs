@@ -716,8 +716,8 @@ sequenceDiagram
 - The frontend route guard `RequirePatientConsent` hides the assessment form without consent, so
   in the browser the backend refusal is only reached with a stale page or a direct API call. The
   frontend guard is for the user; the aspect is the security rule.
-- Not built: `@OwnedResource` with `OwnershipResolver` (needs stored assessments and
-  `GET /api/assessments/{id}`, Iteration 7) and `DeniedAccessMonitor` (stretch goal).
+- `@OwnedResource` with `OwnershipResolver` was built in Iteration 7, with stored assessments
+  (see `iteration7/README.md`). Not built: `DeniedAccessMonitor` (stretch goal).
 
 #### Validation
 

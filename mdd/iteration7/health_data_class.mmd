@@ -1,0 +1,97 @@
+%% MDD Iteration 7 - Structural model: stored assessments, reports and the ownership guard.
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+classDiagram
+    direction LR
+
+    class StoredAssessment {
+        <<@Entity assessments>>
+        -UUID id
+        -Patient patient
+        -AssessmentStatus status
+        -int followUpRounds
+        -String input "encrypted JSON"
+        -String followUpState "encrypted JSON"
+        -String result "encrypted JSON"
+        -long version
+        +recordFollowUp(state, result, completed)
+        +isCompleted() boolean
+    }
+    class StoredReport {
+        <<@Entity reports>>
+        -UUID id
+        -ReportStatus status = DRAFT
+        -Doctor doctor
+        -String clinicalNotes "encrypted"
+        -OffsetDateTime sentAt
+    }
+    class AssessmentStatus {
+        <<enum>>
+        IN_PROGRESS
+        COMPLETED
+    }
+    class ReportStatus {
+        <<enum>>
+        DRAFT
+        SENT
+        OPENED
+        REVIEWED
+    }
+    class StoredAssessmentRepository {
+        <<JpaRepository>>
+        +findByPatientIdOrderByCreatedAtDesc(UUID) List
+        +findOwnerId(UUID) Optional~UUID~
+    }
+    class AssessmentHistoryService {
+        <<@Service, @Transactional>>
+        +create(patient, input, state, result) StoredAssessment
+        +load(UUID) StoredAssessment
+        +recordFollowUp(UUID, version, state, result) StoredAssessment
+        +listFor(patient) List
+    }
+    class AssessmentSnapshots {
+        <<JSON mapping>>
+        +write(Object) String
+        +readInput(String) AssessmentInput
+        +readState(String) FollowUpState
+        +readResult(String) PredictionResult
+    }
+    class AssessmentApiService {
+        +runAssessment(AssessmentRequest)
+        +continueAssessment(FollowupRequest)
+        +listAssessments()
+        +getAssessment(UUID)
+    }
+    class OwnedResource {
+        <<annotation>>
+        +ResourceType resource
+        +String id "SpEL over arguments"
+        +boolean optional
+    }
+    class OwnershipAspect {
+        <<@Aspect @Before, order 3>>
+    }
+    class OwnershipResolver {
+        <<interface, Strategy>>
+        +resource() ResourceType
+        +ownerOf(UUID) Optional~UUID~
+    }
+    class AssessmentOwnershipResolver
+    class ResourceAccessDeniedException {
+        <<404 assessment-not-found>>
+        +auditReason "not-owner | unknown-resource"
+    }
+
+    StoredAssessment "1" *-- "1" StoredReport : report
+    StoredAssessment --> AssessmentStatus
+    StoredReport --> ReportStatus
+    StoredAssessment "0..*" --> "1" Patient : patient
+    StoredReport "0..*" --> "0..1" Doctor : doctor
+    AssessmentHistoryService --> StoredAssessmentRepository
+    AssessmentApiService --> AssessmentHistoryService
+    AssessmentApiService --> AssessmentSnapshots
+    AssessmentApiService ..> OwnedResource : annotated
+    OwnershipAspect ..> OwnedResource : intercepts
+    OwnershipAspect --> OwnershipResolver
+    AssessmentOwnershipResolver ..|> OwnershipResolver
+    AssessmentOwnershipResolver --> StoredAssessmentRepository
+    OwnershipAspect ..> ResourceAccessDeniedException : throws

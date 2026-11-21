@@ -1,0 +1,36 @@
+%% MDD Iteration 7 - Data model (ER) for stored assessments and reports.
+%% Created by Flyway V4. Health data is stored as AES-256-GCM ciphertext (FieldEncryptor);
+%% only ids, timestamps, statuses and counters are plaintext.
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+erDiagram
+    patients ||--o{ assessments : "owns"
+    assessments ||--|| reports : "has"
+    doctors |o--o{ reports : "receives (Iteration 12)"
+
+    patients {
+        uuid user_id PK "from Iteration 5"
+    }
+    doctors {
+        uuid user_id PK "from Iteration 5"
+    }
+    assessments {
+        uuid id PK
+        uuid patient_id FK "-> patients.user_id ON DELETE CASCADE"
+        varchar status "IN_PROGRESS | COMPLETED"
+        int follow_up_rounds "answered follow-up questions"
+        text input "encrypted JSON: free text + symptom entries"
+        text follow_up_state "encrypted JSON: confirmed, denied, answers"
+        text result "encrypted JSON: latest prediction result"
+        bigint version "optimistic lock"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    reports {
+        uuid id PK
+        uuid assessment_id FK, UK "-> assessments.id ON DELETE CASCADE"
+        varchar status "DRAFT | SENT | OPENED | REVIEWED"
+        uuid doctor_id FK "-> doctors.user_id ON DELETE SET NULL, null until sent"
+        text clinical_notes "encrypted, null until reviewed"
+        timestamptz created_at "NOT NULL"
+        timestamptz sent_at "null until sent"
+    }

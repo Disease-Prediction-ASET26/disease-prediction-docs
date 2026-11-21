@@ -1,0 +1,48 @@
+%% MDD Iteration 7 - Behavioural model: an assessment is stored, then updated by its follow-up
+%% answers. The server keeps the follow-up state; the client only sends the answer.
+%% Render: VS Code Mermaid preview, IntelliJ, or https://mermaid.live
+sequenceDiagram
+    autonumber
+    actor P as Patient (web app)
+    participant G as Guard aspects (audit, consent, ownership)
+    participant S as AssessmentApiService
+    participant AI as Prediction service
+    participant H as AssessmentHistoryService
+    participant DB as PostgreSQL
+
+    P->>G: POST /api/assessments {freeText, symptomEntries}
+    G->>S: runAssessment (consent checked)
+    S->>AI: POST /predict
+    AI-->>S: result (activeSymptoms, needsFollowUp, followUp, redFlags)
+    S->>H: create(patient, input, state, result)
+    H->>DB: INSERT assessments (encrypted), INSERT reports (DRAFT)
+    S-->>P: 200 {assessmentId, result}
+
+    loop while result.needsFollowUp and not EMERGENCY
+        P->>G: POST /api/assessments/followup {assessmentId, answer}
+        G->>G: consent, then ownership of assessmentId
+        alt not the owner, or unknown id
+            G-->>P: 404 assessment-not-found (audited as DENIED)
+        end
+        G->>S: continueAssessment
+        S->>H: load(assessmentId)
+        alt assessment already COMPLETED
+            S-->>P: 409 assessment-completed
+        end
+        S->>S: apply answer to the stored state
+        S->>AI: POST /predict/followup (stored confirmed, denied, rounds)
+        AI-->>S: re-ranked result
+        S->>H: recordFollowUp(id, version, state, result)
+        H->>DB: UPDATE assessments (version checked)
+        alt another answer saved first
+            S-->>P: 409 assessment-conflict
+        end
+        S-->>P: 200 {same assessmentId, result}
+    end
+
+    P->>G: GET /api/assessments/{id}
+    G->>G: ownership of id
+    G->>S: getAssessment
+    S->>H: load(id)
+    H->>DB: SELECT, decrypt
+    S-->>P: 200 detail with input, result and report status
