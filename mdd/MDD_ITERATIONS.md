@@ -451,7 +451,7 @@ Access Guard) are in **`iteration6/README.md`**.
 
 > The four iterations below are written in ASD Simplified Technical English (STE): short
 > sentences, active voice, present tense, and one instruction in each sentence. Iteration 7
-> (Health-data persistence, Java backend) stays a planned roadmap item. It is not yet done.
+> (Health-data persistence, Java backend) was done after them; see `iteration7/README.md`.
 > Iteration 9b comes after Iteration 9 so that it does not use the Iteration 7 number.
 > Iteration 9c (red-flag urgency, the final iteration) follows the same rule.
 
@@ -1271,7 +1271,7 @@ Status of the roadmap items (`roadmap/roadmap.png`) at the end of the cycle, che
 | --- | --- |
 | 5 — User and consent store (Java BE) | Done (`iteration5/`) |
 | 6 — Identity (BE + React) | Done with Hanko instead of Keycloak (`iteration6/`) |
-| 7 — Health-data persistence (Java BE) | Not done (no assessment tables; migrations stop at V2) |
+| 7 — Health-data persistence (Java BE) | Done in the backend (`iteration7/`): stored assessments and reports, server-side follow-up state, ownership guard; frontend history page next |
 | 8 — Python prediction service web layer | Done (`iteration8/`) |
 | 9 — Python ML pipeline (classifier) | Done (`iteration9/`); follow-up loop in `iteration9b/` |
 | 10 — Real SOA boundary (BE to Python) | Partly done: `HttpPredictionClient` calls the AI service; no Resilience4j circuit breaker yet |
@@ -1293,6 +1293,7 @@ The diagram sources are in `iteration9c/`.
   - Iteration 4 — Patient Web App: client-side routing (React Router) — `<owner>` (planned; see `MDD_ITERATIONS_FE_PLAN.md`, Part 2)
   - Iteration 5 — User and consent persistence (Java backend) — `<owner>` (implemented; see `iteration5/README.md`)
   - Iteration 6 — Identity and login with Hanko (Java backend + React) — `<owner>` (designed; see `iteration6/README.md`)
+  - Iteration 7 — Health-data persistence (Java backend) — Daria (implemented in the backend; see `iteration7/README.md`)
   - AOP component — Personal Data Access Guard (Java backend) — Daria (consent and audit aspects implemented, backend PR #84; see `iteration6/README.md`, Part B)
 - Repository / process (Lab05 Theme 2 — GitHub): GitFlow branching (main ← develop ← feature
   branches), CI pipeline (lint, build, secret scan, OWASP dependency scan, SonarQube gate,
