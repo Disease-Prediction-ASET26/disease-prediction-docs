@@ -1,0 +1,19 @@
+flowchart TB
+    subgraph BEFORE["Baseline (after Iterations 7 and 9c)"]
+        direction TB
+        B1["Top navigation bar, one set of links for everyone"]
+        B2["The backend stores assessments (Iteration 7),<br/>but no page shows them"]:::problem
+        B3["Each follow-up answer is stored as a new assessment<br/>(the client does not send assessmentId)"]:::problem
+        B4["No place for the doctor and admin roles in the UI"]:::problem
+    end
+    subgraph AFTER["Refined (Iteration 12a, Pocket Doc design)"]
+        direction TB
+        A1["App shell: sidebar per role from /api/me,<br/>header with the signed-in user, mobile menu"]
+        A2["Patient: overview, My reports and report detail<br/>from GET /api/assessments"]
+        A3["Follow-up sends assessmentId:<br/>one stored assessment per session"]
+        A4["Doctor and admin workspaces with honest empty states,<br/>RequireRole per workspace"]
+        A1 --> A2 --> A3
+        A1 --> A4
+    end
+    BEFORE ==>|"integrate the Pocket Doc design on real data only"| AFTER
+    classDef problem fill:#ffe0e0,stroke:#c0392b,color:#7b1e14;

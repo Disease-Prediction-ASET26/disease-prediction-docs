@@ -1,0 +1,66 @@
+classDiagram
+    namespace Shell {
+        class RootLayout {
+            +sidebar (NAVIGATION[role])
+            +header (name, role)
+            +mobile menu
+            +Outlet
+        }
+        class NAVIGATION {
+            +PATIENT NavItem[]
+            +DOCTOR NavItem[]
+            +ADMIN NavItem[]
+        }
+        class RequireRole {
+            +roles Role[]
+        }
+    }
+    namespace Patient_workspace {
+        class HomePage {
+            +Landing (anonymous)
+            +PatientDashboard
+        }
+        class ReportsRoute {
+            +search, status filter
+        }
+        class ReportDetailRoute
+        class AssessmentRoute
+        class AccountRoute
+        class AppointmentsRoute {
+            <<empty state>>
+        }
+    }
+    namespace Doctor_and_admin_workspaces {
+        class DoctorDashboard {
+            <<empty state>>
+        }
+        class DoctorProfileRoute {
+            +name, email from /api/me
+        }
+        class AdminDashboard {
+            <<empty state>>
+        }
+    }
+    namespace Data {
+        class useAssessmentList
+        class useAssessmentDetail
+        class AssessmentApiClient {
+            +submitAssessment()
+            +submitFollowUp(assessmentId, answer)
+            +listAssessments()
+            +getAssessment(id)
+        }
+        class useProfile {
+            +profile.role
+        }
+    }
+
+    RootLayout --> NAVIGATION : items for profile.role
+    RootLayout --> useProfile
+    RequireRole --> useProfile
+    HomePage --> useAssessmentList : recent assessments
+    ReportsRoute --> useAssessmentList
+    ReportDetailRoute --> useAssessmentDetail
+    useAssessmentList --> AssessmentApiClient : GET /api/assessments
+    useAssessmentDetail --> AssessmentApiClient : GET /api/assessments/{id}
+    AssessmentRoute --> AssessmentApiClient : POST, follow-up with assessmentId

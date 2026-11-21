@@ -1,0 +1,16 @@
+flowchart TD
+    U[User opens a page] --> A{Signed in?}
+    A -->|no| P["Public pages: Home (landing), Sign in"]
+    A -->|yes| PR{Profile ready?}
+    PR -->|no profile| ON[Onboarding]
+    PR -->|yes| R{profile.role}
+    R -->|PATIENT| PW["Patient workspace: Overview, New assessment,<br/>My reports, Appointments, Account"]
+    R -->|DOCTOR| DW["Doctor workspace: Dashboard, Assessments,<br/>Schedule, Doctor profile, Account"]
+    R -->|ADMIN| AW["Admin workspace: Overview, Doctors, Users,<br/>AI model, Access audit, Account"]
+    PW --> C{Consent active?}
+    C -->|yes| NA[New assessment]
+    C -->|no| CN["Consent needed (My reports stay readable)"]
+    PW --> REP["My reports: GET /api/assessments,<br/>detail: GET /api/assessments/{id}"]
+    DW --> EMPTY["Empty states: no API yet (Iteration 12)"]
+    AW --> EMPTY
+    PW -->|"opens a doctor or admin page"| NOT["RequireRole: not part of your workspace"]
